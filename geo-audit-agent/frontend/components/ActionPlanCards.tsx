@@ -1,0 +1,91 @@
+"use client";
+
+import { Recommendation } from "@/lib/types";
+
+type Props = { recommendations: Recommendation[]; locale?: "it" | "en" };
+
+const PRIORITY_CONFIG = {
+  critical: {
+    label: "Critico",
+    ring: "border-red-800",
+    bg: "bg-red-950/60",
+    badge: "bg-red-700 text-white",
+    dot: "bg-red-500",
+  },
+  high: {
+    label: "Alto",
+    ring: "border-orange-800",
+    bg: "bg-orange-950/60",
+    badge: "bg-orange-600 text-white",
+    dot: "bg-orange-500",
+  },
+  medium: {
+    label: "Medio",
+    ring: "border-yellow-800",
+    bg: "bg-yellow-950/60",
+    badge: "bg-yellow-600 text-white",
+    dot: "bg-yellow-500",
+  },
+  low: {
+    label: "Basso",
+    ring: "border-blue-800",
+    bg: "bg-blue-950/60",
+    badge: "bg-blue-700 text-white",
+    dot: "bg-blue-500",
+  },
+} as const;
+
+export default function ActionPlanCards({ recommendations, locale = "en" }: Props) {
+  const labels = {
+    title: locale === "it" ? "Piano d'Azione Prioritizzato" : "Prioritized Action Plan",
+    critical: locale === "it" ? "Critico" : "Critical",
+    high: locale === "it" ? "Alto" : "High",
+    medium: locale === "it" ? "Medio" : "Medium",
+    low: locale === "it" ? "Basso" : "Low",
+  };
+
+  const priorityLabels = {
+    critical: labels.critical,
+    high: labels.high,
+    medium: labels.medium,
+    low: labels.low,
+  } as const;
+
+  return (
+    <div className="glass-panel rounded-2xl p-6">
+      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
+        {labels.title}
+      </h2>
+
+      <ol className="space-y-3">
+        {recommendations.map((rec, i) => {
+          const cfg = PRIORITY_CONFIG[rec.priority] ?? PRIORITY_CONFIG.low;
+          return (
+            <li
+              key={i}
+              className={`border ${cfg.ring} ${cfg.bg} rounded-xl p-4 flex gap-3 backdrop-blur-sm`}
+            >
+              {/* Number + dot */}
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                <span className="text-xs text-slate-400 font-mono">{String(i + 1).padStart(2, "0")}</span>
+                <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${cfg.badge}`}>
+                    {priorityLabels[rec.priority] ?? cfg.label}
+                  </span>
+                  <span className="text-xs text-slate-300/85">{rec.impact}</span>
+                </div>
+                <p className="text-sm text-slate-100 leading-snug">{rec.action}</p>
+                <p className="text-xs text-slate-400 mt-1">⏱ {rec.effort}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}

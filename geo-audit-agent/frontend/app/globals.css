@@ -1,0 +1,555 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-bg: rgba(10, 16, 30, 0.52);
+  --glass-bg-strong: rgba(10, 16, 30, 0.72);
+  --glass-border: rgba(148, 163, 184, 0.24);
+  --glass-shadow: 0 10px 40px rgba(2, 8, 23, 0.35);
+  --accent-cyan: #67e8f9;
+  --accent-teal: #2dd4bf;
+  --accent-indigo: #818cf8;
+}
+
+/*
+  Override CopilotKit CSS variables.
+  We use html[data-theme="dark"] (specificity 0,1,1) which beats
+  CopilotKit's [data-theme="dark"] (0,1,0) and :root (0,0,1)
+  regardless of cascade order.
+*/
+html[data-theme="dark"] {
+  --copilot-kit-background-color: transparent;
+  --copilot-kit-input-background-color: rgba(10, 16, 30, 0.72);
+  --copilot-kit-secondary-color: rgba(10, 16, 30, 0.55);
+  --copilot-kit-separator-color: rgba(148, 163, 184, 0.18);
+  --copilot-kit-primary-color: #67e8f9;
+  --copilot-kit-contrast-color: #e2e8f0;
+  --copilot-kit-secondary-contrast-color: #cbd5e1;
+  --copilot-kit-muted-color: rgba(148, 163, 184, 0.5);
+  --copilot-kit-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --copilot-kit-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(45, 212, 191, 0.18), transparent 36%),
+    radial-gradient(circle at 88% 15%, rgba(99, 102, 241, 0.16), transparent 30%),
+    radial-gradient(circle at 55% 88%, rgba(103, 232, 249, 0.18), transparent 34%),
+    linear-gradient(135deg, #020617 0%, #0b1120 42%, #111827 100%);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.8) rgba(15, 23, 42, 0.7);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.8);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.9);
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.app-shell::before,
+.app-shell::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  filter: blur(52px);
+  opacity: 0.5;
+}
+
+.app-shell::before {
+  width: 20rem;
+  height: 20rem;
+  border-radius: 999px;
+  top: -4rem;
+  right: -3rem;
+  background: linear-gradient(180deg, rgba(103, 232, 249, 0.6), rgba(45, 212, 191, 0.12));
+}
+
+.app-shell::after {
+  width: 17rem;
+  height: 17rem;
+  border-radius: 999px;
+  bottom: -3rem;
+  left: -2rem;
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.44), rgba(2, 8, 23, 0.1));
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-panel-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-chip {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.input-glass {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(12px);
+}
+
+.input-glass:focus {
+  outline: none;
+  border-color: rgba(103, 232, 249, 0.7);
+  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.2);
+}
+
+.copilotKitChat,
+.copilotKitWindow {
+  background: transparent !important;
+}
+
+/* Hide CopilotKit floating Web Inspector + release badge overlay. */
+html body cpk-web-inspector,
+html body button[aria-label="Web Inspector"],
+html body .console-button,
+html body .copilotKitDevConsole,
+html body .copilotKitVersionInfo,
+html body .copilotKitDebugMenuButton,
+html body button[aria-label="Web Inspector"]+div {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ADVANCED ANIMATIONS & KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes float-y {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 18px rgba(103, 232, 249, 0.12),
+      0 0 36px rgba(103, 232, 249, 0.05);
+  }
+
+  50% {
+    box-shadow:
+      0 0 28px rgba(103, 232, 249, 0.32),
+      0 0 60px rgba(45, 212, 191, 0.16),
+      inset 0 0 20px rgba(103, 232, 249, 0.04);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  55% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  75% {
+    transform: scale(0.96);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* ── Card hover: lift + cyan-glow ─────────────────────────────────── */
+.card-hover {
+  transition:
+    transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.32s ease;
+  will-change: transform;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px) scale(1.007);
+  filter:
+    drop-shadow(0 16px 36px rgba(103, 232, 249, 0.14)) drop-shadow(0 4px 12px rgba(2, 8, 23, 0.4));
+}
+
+/* ── Social chip hover: spring scale + glow border ───────────────── */
+.social-chip {
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.social-chip:hover {
+  transform: translateY(-2px) scale(1.07);
+  box-shadow:
+    0 6px 20px rgba(103, 232, 249, 0.2),
+    0 0 0 1px rgba(103, 232, 249, 0.4);
+  background: rgba(103, 232, 249, 0.08) !important;
+}
+
+.social-chip:active {
+  transform: scale(0.95) translateY(0);
+}
+
+/* Icon inside social chip wiggles on hover */
+.social-chip svg {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.social-chip:hover svg {
+  transform: scale(1.22) rotate(-8deg);
+}
+
+/* ── Slide-up stagger helpers ─────────────────────────────────────── */
+.slide-up {
+  animation: slide-up 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.slide-up-1 {
+  animation: slide-up 0.45s 0.06s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.slide-up-2 {
+  animation: slide-up 0.45s 0.13s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.slide-up-3 {
+  animation: slide-up 0.45s 0.20s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.slide-up-4 {
+  animation: slide-up 0.45s 0.27s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.slide-up-5 {
+  animation: slide-up 0.45s 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── Glow pulse (score badge, chat panel) ─────────────────────────── */
+.glow-pulse {
+  animation: glow-pulse 3.2s ease-in-out infinite;
+}
+
+/* ── Shimmer gradient text ────────────────────────────────────────── */
+.shimmer-text {
+  background: linear-gradient(90deg,
+      #67e8f9 0%,
+      #a5f3fc 18%,
+      #2dd4bf 35%,
+      #818cf8 52%,
+      #67e8f9 68%,
+      #2dd4bf 85%,
+      #67e8f9 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ── Bounce-in entrance (empty state icon) ───────────────────────── */
+.bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Floating animation (decorative) ────────────────────────────── */
+.float-y {
+  animation: float-y 4s ease-in-out infinite;
+}
+
+/* ── Score badge hover glow ──────────────────────────────────────── */
+.score-badge-hover {
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.score-badge-hover:hover {
+  transform: scale(1.04);
+  box-shadow:
+    0 8px 28px rgba(103, 232, 249, 0.22),
+    0 0 0 1px rgba(103, 232, 249, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHAT MESSAGE DESIGN — CopilotKit overrides
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Outer chat container ─────────────────────────────────────────── */
+.copilotKitChat,
+.copilotKitWindow {
+  background: transparent !important;
+  height: 100% !important;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.copilotKitHeader {
+  background: rgba(7, 12, 26, 0.85) !important;
+  border-bottom: 1px solid rgba(103, 232, 249, 0.14) !important;
+  backdrop-filter: blur(16px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+  color: #e2e8f0 !important;
+  border-top-left-radius: 1.5rem !important;
+  border-top-right-radius: 1.5rem !important;
+}
+
+/* ── Messages scroll area ─────────────────────────────────────────── */
+.copilotKitMessages {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.copilotKitMessagesContainer {
+  padding: 16px 14px 8px !important;
+  gap: 6px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* ── Input container (bottom bar) ────────────────────────────────── */
+.copilotKitInputContainer {
+  background: rgba(7, 12, 26, 0.82) !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.13) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom-left-radius: 1.5rem !important;
+  border-bottom-right-radius: 1.5rem !important;
+}
+
+/* ── Input field ─────────────────────────────────────────────────── */
+.copilotKitInput {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 14px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.copilotKitInput:focus-within {
+  border-color: rgba(103, 232, 249, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.12) !important;
+}
+
+.copilotKitInput>textarea {
+  color: #cbd5e1 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.55 !important;
+}
+
+.copilotKitInput>textarea::placeholder {
+  color: rgba(148, 163, 184, 0.45) !important;
+  opacity: 1 !important;
+}
+
+/* ── Send / control buttons ──────────────────────────────────────── */
+.copilotKitInputControlButton:not([disabled]) {
+  color: #67e8f9 !important;
+}
+
+.copilotKitInputControlButton:not([disabled]):hover {
+  color: #a5f3fc !important;
+  transform: scale(1.12) !important;
+}
+
+.copilotKitInputControlButton[disabled] {
+  color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* ── Powered by footer ───────────────────────────────────────────── */
+.poweredBy {
+  background: rgba(7, 12, 26, 0.82) !important;
+  color: rgba(148, 163, 184, 0.35) !important;
+  border-top: none !important;
+}
+
+/* ── Base message bubble reset ───────────────────────────────────── */
+.copilotKitMessage {
+  animation: slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  border-radius: 16px !important;
+  padding: 10px 14px !important;
+  max-width: 86% !important;
+  margin-bottom: 6px !important;
+}
+
+/* ── USER message: cyan glass bubble, right ──────────────────────── */
+.copilotKitMessage.copilotKitUserMessage {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  background: linear-gradient(135deg,
+      rgba(103, 232, 249, 0.18) 0%,
+      rgba(45, 212, 191, 0.12) 100%) !important;
+  border: 1px solid rgba(103, 232, 249, 0.32) !important;
+  border-radius: 18px 18px 5px 18px !important;
+  color: #e2e8f0 !important;
+  box-shadow:
+    0 4px 18px rgba(103, 232, 249, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  white-space: pre-wrap !important;
+}
+
+/* ── AI / assistant message: dark glass bubble, left ─────────────── */
+.copilotKitMessage.copilotKitAssistantMessage {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+  max-width: 100% !important;
+  background: rgba(13, 20, 38, 0.78) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  border-left: 2px solid #67e8f9 !important;
+  border-radius: 5px 18px 18px 18px !important;
+  color: #cbd5e1 !important;
+  padding: 12px 16px !important;
+  box-shadow:
+    0 4px 22px rgba(2, 8, 23, 0.45),
+    inset 0 1px 0 rgba(103, 232, 249, 0.04) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+/* Inline code inside AI messages */
+.copilotKitMessage.copilotKitAssistantMessage code {
+  background: rgba(2, 8, 23, 0.65) !important;
+  color: #67e8f9 !important;
+  border-radius: 5px !important;
+  padding: 1px 6px !important;
+  font-size: 0.82rem !important;
+}
+
+/* Code blocks */
+.copilotKitMessage.copilotKitAssistantMessage pre {
+  background: rgba(2, 8, 23, 0.7) !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 0.8rem !important;
+  margin: 8px 0 0 !important;
+  overflow-x: auto !important;
+}
+
+/* Message action controls (copy, thumbs up, etc.) */
+.copilotKitMessageControlButton {
+  color: rgba(148, 163, 184, 0.5) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.copilotKitMessageControlButton:hover {
+  color: #67e8f9 !important;
+  background: rgba(103, 232, 249, 0.08) !important;
+  transform: scale(1.08) !important;
+}
+
+/* ── Typing / in-progress indicator dots ─────────────────────────── */
+.copilotKitActivityDot {
+  background-color: #67e8f9 !important;
+}
+
+/* ── Custom generative message container (action renders) ────────── */
+.copilotKitCustomAssistantMessage {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+}

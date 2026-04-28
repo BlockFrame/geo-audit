@@ -1,0 +1,90 @@
+"use client";
+
+type Props = {
+  found: boolean;
+  types: string[];
+  recommendations: string[];
+  orgJsonldTemplate?: Record<string, unknown> | null;
+  locale?: "it" | "en";
+};
+
+export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, locale = "en" }: Props) {
+  const isIt = locale === "it";
+  const labels = {
+    title: isIt ? "Schema Markup" : "Schema Markup",
+    found: isIt ? "✓ JSON-LD Rilevato" : "✓ JSON-LD Detected",
+    notFound: isIt ? "✗ JSON-LD Assente" : "✗ JSON-LD Missing",
+    types: isIt ? "Tipi rilevati:" : "Detected types:",
+    recs: isIt ? "Raccomandazioni:" : "Recommendations:",
+    tplTitle: isIt ? "Template Organization JSON-LD generato" : "Generated Organization JSON-LD template",
+    tplHint: isIt ? "Incolla questo snippet nel <head> del tuo sito" : "Paste this snippet inside your site's <head>",
+    empty: isIt ? "Nessun dato disponibile." : "No data available.",
+  };
+
+  return (
+    <div className="glass-panel rounded-2xl p-6">
+      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
+        {labels.title}
+      </h2>
+
+      {/* JSON-LD status */}
+      <div className="flex items-center gap-2 mb-4">
+        <span
+          className={`text-xs px-2 py-1 rounded border ${found
+              ? "bg-emerald-400/20 text-emerald-100 border-emerald-300/35"
+              : "bg-rose-400/20 text-rose-100 border-rose-300/35"
+            }`}
+        >
+          {found ? labels.found : labels.notFound}
+        </span>
+      </div>
+
+      {/* Found types */}
+      {types.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs text-slate-400 mb-2">{labels.types}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {types.map((t) => (
+              <span
+                key={t}
+                className="glass-chip text-cyan-100 text-xs px-2 py-0.5 rounded font-mono"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations */}
+      {recommendations.length > 0 && (
+        <div>
+          <p className="text-xs text-slate-400 mb-2">{labels.recs}</p>
+          <ul className="space-y-1.5">
+            {recommendations.map((rec, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-amber-100">
+                <span className="shrink-0 mt-0.5">→</span>
+                <span>{rec}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Generated JSON-LD Organization template */}
+      {orgJsonldTemplate && (
+        <div className="mt-4">
+          <p className="text-xs text-slate-400 mb-1">{labels.tplTitle}</p>
+          <pre className="text-[11px] text-emerald-100 bg-slate-900/60 border border-emerald-400/20 rounded-lg p-3 overflow-x-auto max-h-52 leading-relaxed">
+            {JSON.stringify(orgJsonldTemplate, null, 2)}
+          </pre>
+          <p className="text-[10px] text-slate-400/70 mt-1">💡 {labels.tplHint}</p>
+        </div>
+      )}
+
+      {types.length === 0 && recommendations.length === 0 && !orgJsonldTemplate && (
+        <p className="text-xs text-slate-400">{labels.empty}</p>
+      )}
+    </div>
+  );
+}

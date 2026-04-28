@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title>GEO Audit Agent</title>
+  <desc>Icon for the GEO Audit Agent browser tab.</desc>
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="0.55" stop-color="#111827"/>
+      <stop offset="1" stop-color="#0b1120"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="14" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="24" y1="20" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e2e8f0"/>
+      <stop offset="1" stop-color="#67e8f9"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#bg)"/>
+  <rect x="4.75" y="4.75" width="54.5" height="54.5" rx="17.25" fill="none" stroke="rgba(148,163,184,0.35)" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="17" fill="none" stroke="url(#ring)" stroke-width="4"/>
+  <path d="M40 32c0 4.418-3.582 8-8 8-3.226 0-6.005-1.91-7.274-4.659" fill="none" stroke="url(#mark)" stroke-linecap="round" stroke-width="4.5"/>
+  <path d="M24 32c0-4.418 3.582-8 8-8 2.44 0 4.625 1.092 6.093 2.813" fill="none" stroke="#2dd4bf" stroke-linecap="round" stroke-width="4.5" opacity="0.95"/>
+  <circle cx="44" cy="20" r="3" fill="#67e8f9"/>
+  <circle cx="20" cy="44" r="2.5" fill="#2dd4bf" opacity="0.85"/>
+</svg>
