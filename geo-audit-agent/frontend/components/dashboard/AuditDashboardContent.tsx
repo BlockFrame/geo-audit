@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  trackAuditCompleted,
+  trackReportViewed,
+} from "@/lib/analytics";
 import ActionPlanCards from "@/components/ActionPlanCards";
 import BrandPresencePanel from "@/components/BrandPresencePanel";
 import CitabilityPanel from "@/components/CitabilityPanel";
@@ -30,6 +34,29 @@ type Props = {
 export default function AuditDashboardContent({ state, locale, text, defaultLlmsTxt }: Props) {
   const isRunning = state.status === "fetching" || state.status === "analyzing";
   const hasReport = Boolean(state.report);
+
+  // Track when report is viewed
+  if (hasReport && state.report) {
+    try {
+      const status =
+        (state.report.geo_score ?? 0) >= 75
+          ? "strong"
+          : (state.report.geo_score ?? 0) >= 50
+            ? "moderate"
+            : "at_risk";
+
+      trackAuditCompleted({
+        url: state.report.url,
+        business_type: state.report.business_type,
+        geo_score: state.report.geo_score,
+        status,
+      });
+
+      trackReportViewed("full_dashboard");
+    } catch (error) {
+      console.error("Failed to track report view:", error);
+    }
+  }
 
   return (
     <>

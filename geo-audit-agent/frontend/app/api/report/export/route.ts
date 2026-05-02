@@ -1,4 +1,10 @@
-import { buildVerboseReportMarkdown, createReportFileNameBase } from "@/lib/report-export";
+import {
+  buildReportMarkdown,
+  createReportFileNameBase,
+  createReportTitle,
+  ExportAudience,
+  ReportMode,
+} from "@/lib/report-export";
 import { GeoReport } from "@/lib/types";
 import { NextRequest } from "next/server";
 
@@ -13,6 +19,9 @@ const MAX_STRING_CHARS = 20_000;
 type ExportRequestBody = {
   format?: "md" | "pdf";
   report?: GeoReport;
+  mode?: ReportMode;
+  audience?: ExportAudience;
+  brandName?: string;
 };
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => (
@@ -30,6 +39,8 @@ const isBoundedStringArray = (value: unknown): value is string[] => (
 );
 
 const isValidExportFormat = (value: unknown): value is "md" | "pdf" => value === "md" || value === "pdf";
+const isValidMode = (value: unknown): value is ReportMode => value === "verbose" || value === "executive" || value === "checklist";
+const isValidAudience = (value: unknown): value is ExportAudience => value === "executive" || value === "marketing" || value === "technical";
 
 const isValidReportPayload = (value: unknown): value is GeoReport => {
   if (!isPlainObject(value)) {
@@ -108,7 +119,7 @@ const wrapText = (text: string, maxChars: number) => {
   return wrapped;
 };
 
-const buildPdf = async (markdown: string, title: string) => {
+const buildPdf = async (markdown: string, title: string, subTitle: string) => {
   const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
   const document = await PDFDocument.create();
   const regularFont = await document.embedFont(StandardFonts.Helvetica);
@@ -130,6 +141,14 @@ const buildPdf = async (markdown: string, title: string) => {
     cursorY = pageHeight - margin;
   };
 
+  page.drawRectangle({
+    x: margin,
+    y: cursorY - 18,
+    width: pageWidth - (margin * 2),
+    height: 34,
+    color: rgb(0.9, 0.96, 1),
+  });
+
   page.drawText(title, {
     x: margin,
     y: cursorY,
@@ -137,7 +156,15 @@ const buildPdf = async (markdown: string, title: string) => {
     font: boldFont,
     color: rgb(0.08, 0.14, 0.24),
   });
-  cursorY -= 26;
+
+  page.drawText(subTitle, {
+    x: margin,
+    y: cursorY - 14,
+    size: 9,
+    font: regularFont,
+    color: rgb(0.25, 0.35, 0.45),
+  });
+  cursorY -= 38;
 
   for (const line of wrapText(markdown, maxChars)) {
     if (cursorY <= margin) {
@@ -174,6 +201,9 @@ export async function POST(req: NextRequest) {
 
   const format = body.format ?? "md";
   const report = body.report;
+  const mode = body.mode ?? "verbose";
+  const audience = body.audience ?? "technical";
+  const brandName = body.brandName;
 
   if (!isValidExportFormat(format)) {
     return Response.json({ error: "Unsupported export format" }, { status: 400 });
@@ -183,20 +213,34 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Missing report payload" }, { status: 400 });
   }
 
-  const markdown = buildVerboseReportMarkdown(report);
+  if (!isValidMode(mode)) {
+    return Response.json({ error: "Unsupported report mode" }, { status: 400 });
+  }
+
+  if (!isValidAudience(audience)) {
+    return Response.json({ error: "Unsupported audience" }, { status: 400 });
+  }
+
+  if (brandName !== undefined && !isBoundedString(brandName, 120)) {
+    return Response.json({ error: "Invalid brand name" }, { status: 400 });
+  }
+
+  const markdown = buildReportMarkdown(report, { mode, audience, brandName });
   if (markdown.length > MAX_MARKDOWN_CHARS) {
     return Response.json({ error: "Export content too large" }, { status: 413 });
   }
 
   const fileNameBase = createReportFileNameBase(report);
+  const title = createReportTitle(report, { mode, audience, brandName });
+  const fileSuffix = `${mode}-${audience}`;
 
   if (format === "pdf") {
-    const pdfBytes = await buildPdf(markdown, `${fileNameBase}.pdf`);
+    const pdfBytes = await buildPdf(markdown, title, `Audience: ${audience} | Mode: ${mode}`);
     return new Response(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileNameBase}.pdf"`,
+        "Content-Disposition": `attachment; filename="${fileNameBase}-${fileSuffix}.pdf"`,
       },
     });
   }
@@ -205,7 +249,7 @@ export async function POST(req: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${fileNameBase}.md"`,
+      "Content-Disposition": `attachment; filename="${fileNameBase}-${fileSuffix}.md"`,
     },
   });
 }
