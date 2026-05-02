@@ -4,24 +4,6 @@
     "devCommand": "npm run dev",
     "installCommand": "npm install",
     "framework": "nextjs",
-    "env": {
-        "NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL": {
-            "description": "CopilotKit runtime endpoint",
-            "default": "/api/copilotkit"
-        },
-        "OPENROUTER_API_KEY": {
-            "description": "OpenRouter API key for LLM provider",
-            "required": true
-        },
-        "OPENROUTER_BASE_URL": {
-            "description": "OpenRouter base URL",
-            "default": "https://openrouter.ai/api/v1"
-        },
-        "OPENROUTER_MODEL": {
-            "description": "OpenRouter model identifier",
-            "default": "openrouter/free"
-        }
-    },
     "regions": [
         "iad1"
     ],
@@ -29,8 +11,5 @@
         "deploymentEnabled": {
             "main": true
         }
-    },
-    "analytics": {
-        "enabled": true
     }
 }
