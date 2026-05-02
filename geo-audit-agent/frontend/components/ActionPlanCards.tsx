@@ -6,28 +6,28 @@ type Props = { recommendations: Recommendation[]; locale?: "it" | "en" };
 
 const PRIORITY_CONFIG = {
   critical: {
-    label: "Critico",
+    label: "Critical",
     ring: "border-red-800",
     bg: "bg-red-950/60",
     badge: "bg-red-700 text-white",
     dot: "bg-red-500",
   },
   high: {
-    label: "Alto",
+    label: "High",
     ring: "border-orange-800",
     bg: "bg-orange-950/60",
     badge: "bg-orange-600 text-white",
     dot: "bg-orange-500",
   },
   medium: {
-    label: "Medio",
+    label: "Medium",
     ring: "border-yellow-800",
     bg: "bg-yellow-950/60",
     badge: "bg-yellow-600 text-white",
     dot: "bg-yellow-500",
   },
   low: {
-    label: "Basso",
+    label: "Low",
     ring: "border-blue-800",
     bg: "bg-blue-950/60",
     badge: "bg-blue-700 text-white",
@@ -37,11 +37,11 @@ const PRIORITY_CONFIG = {
 
 export default function ActionPlanCards({ recommendations, locale = "en" }: Props) {
   const labels = {
-    title: locale === "it" ? "Piano d'Azione Prioritizzato" : "Prioritized Action Plan",
-    critical: locale === "it" ? "Critico" : "Critical",
-    high: locale === "it" ? "Alto" : "High",
-    medium: locale === "it" ? "Medio" : "Medium",
-    low: locale === "it" ? "Basso" : "Low",
+    title: "Prioritized Action Plan",
+    critical: "Critical",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
   };
 
   const priorityLabels = {

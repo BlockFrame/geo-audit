@@ -9,15 +9,14 @@ type Props = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  found: { label: "✓ Presente", className: "bg-emerald-400/18 text-emerald-100 border border-emerald-300/35" },
-  not_found: { label: "✗ Mancante (404)", className: "bg-rose-400/18 text-rose-100 border border-rose-300/35" },
-  blocked: { label: "⚠ Bloccato (403)", className: "bg-amber-300/20 text-amber-100 border border-amber-300/35" },
-  error: { label: "⚠ Errore", className: "bg-slate-500/18 text-slate-200 border border-slate-300/30" },
+  found: { label: "✓ Found", className: "bg-emerald-400/18 text-emerald-100 border border-emerald-300/35" },
+  not_found: { label: "✗ Missing (404)", className: "bg-rose-400/18 text-rose-100 border border-rose-300/35" },
+  blocked: { label: "⚠ Blocked (403)", className: "bg-amber-300/20 text-amber-100 border border-amber-300/35" },
+  error: { label: "⚠ Error", className: "bg-slate-500/18 text-slate-200 border border-slate-300/30" },
 };
 
 export default function LlmsTxtPreview({ content, status, locale = "en" }: Props) {
   const [copied, setCopied] = useState(false);
-  const isIt = locale === "it";
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content);
@@ -27,15 +26,11 @@ export default function LlmsTxtPreview({ content, status, locale = "en" }: Props
 
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.error;
   const labels = {
-    subtitle: isIt ? "Equivalente del robots.txt per i modelli AI" : "Robots.txt equivalent for AI models",
-    copy: isIt ? "Copia" : "Copy",
-    copied: isIt ? "✓ Copiato" : "✓ Copied",
-    deployHint: isIt
-      ? "Distribuisci questo file su"
-      : "Deploy this file to",
-    deployHint2: isIt
-      ? "per essere riconosciuto dai modelli AI."
-      : "to be discovered by AI models.",
+    subtitle: "Robots.txt equivalent for AI models",
+    copy: "Copy",
+    copied: "✓ Copied",
+    deployHint: "Deploy this file to",
+    deployHint2: "to be discovered by AI models.",
   };
 
   return (

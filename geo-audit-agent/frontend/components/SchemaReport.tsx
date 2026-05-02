@@ -9,16 +9,15 @@ type Props = {
 };
 
 export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, locale = "en" }: Props) {
-  const isIt = locale === "it";
   const labels = {
-    title: isIt ? "Schema Markup" : "Schema Markup",
-    found: isIt ? "✓ JSON-LD Rilevato" : "✓ JSON-LD Detected",
-    notFound: isIt ? "✗ JSON-LD Assente" : "✗ JSON-LD Missing",
-    types: isIt ? "Tipi rilevati:" : "Detected types:",
-    recs: isIt ? "Raccomandazioni:" : "Recommendations:",
-    tplTitle: isIt ? "Template Organization JSON-LD generato" : "Generated Organization JSON-LD template",
-    tplHint: isIt ? "Incolla questo snippet nel <head> del tuo sito" : "Paste this snippet inside your site's <head>",
-    empty: isIt ? "Nessun dato disponibile." : "No data available.",
+    title: "Schema Markup",
+    found: "✓ JSON-LD Detected",
+    notFound: "✗ JSON-LD Missing",
+    types: "Detected types:",
+    recs: "Recommendations:",
+    tplTitle: "Generated Organization JSON-LD template",
+    tplHint: "Paste this snippet inside your site's <head>",
+    empty: "No data available.",
   };
 
   return (
@@ -31,8 +30,8 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
       <div className="flex items-center gap-2 mb-4">
         <span
           className={`text-xs px-2 py-1 rounded border ${found
-              ? "bg-emerald-400/20 text-emerald-100 border-emerald-300/35"
-              : "bg-rose-400/20 text-rose-100 border-rose-300/35"
+            ? "bg-emerald-400/20 text-emerald-100 border-emerald-300/35"
+            : "bg-rose-400/20 text-rose-100 border-rose-300/35"
             }`}
         >
           {found ? labels.found : labels.notFound}

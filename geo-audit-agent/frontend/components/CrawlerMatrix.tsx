@@ -5,13 +5,13 @@ import { CrawlerInfo } from "@/lib/types";
 type Props = { crawlers: CrawlerInfo[]; locale?: "it" | "en" };
 
 const ACCESS_STYLES: Record<string, { label: string; className: string }> = {
-  blocked: { label: "Bloccato", className: "bg-rose-500/20 text-rose-200 border border-rose-300/35" },
-  blocked_via_wildcard: { label: "Bloccato (*)", className: "bg-rose-500/15 text-rose-200 border border-rose-300/25" },
-  partial: { label: "Parziale", className: "bg-amber-400/20 text-amber-100 border border-amber-300/35" },
-  partial_via_wildcard: { label: "Parziale (*)", className: "bg-amber-400/15 text-amber-100 border border-amber-300/25" },
-  allowed: { label: "Consentito", className: "bg-emerald-400/20 text-emerald-100 border border-emerald-300/35" },
-  allowed_via_wildcard: { label: "Consentito (*)", className: "bg-emerald-400/15 text-emerald-100 border border-emerald-300/25" },
-  unknown: { label: "Sconosciuto", className: "bg-slate-500/20 text-slate-200 border border-slate-300/25" },
+  blocked: { label: "Blocked", className: "bg-rose-500/20 text-rose-200 border border-rose-300/35" },
+  blocked_via_wildcard: { label: "Blocked (*)", className: "bg-rose-500/15 text-rose-200 border border-rose-300/25" },
+  partial: { label: "Partial", className: "bg-amber-400/20 text-amber-100 border border-amber-300/35" },
+  partial_via_wildcard: { label: "Partial (*)", className: "bg-amber-400/15 text-amber-100 border border-amber-300/25" },
+  allowed: { label: "Allowed", className: "bg-emerald-400/20 text-emerald-100 border border-emerald-300/35" },
+  allowed_via_wildcard: { label: "Allowed (*)", className: "bg-emerald-400/15 text-emerald-100 border border-emerald-300/25" },
+  unknown: { label: "Unknown", className: "bg-slate-500/20 text-slate-200 border border-slate-300/25" },
 };
 
 const TYPE_BADGE: Record<string, string> = {
@@ -21,31 +21,28 @@ const TYPE_BADGE: Record<string, string> = {
 
 export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
   const configured = crawlers.filter((c) => c.explicitly_configured).length;
-  const isIt = locale === "it";
   const tableText = {
-    title: isIt ? "AI Crawler Access Matrix" : "AI Crawler Access Matrix",
-    configured: isIt ? "configurati" : "configured",
-    crawler: isIt ? "Crawler" : "Crawler",
-    company: isIt ? "Azienda" : "Company",
-    type: isIt ? "Tipo" : "Type",
-    access: isIt ? "Accesso" : "Access",
-    config: isIt ? "Config." : "Config",
-    tier: isIt ? "Tier" : "Tier",
-    explicit: isIt ? "Esplicito" : "Explicit",
-    wildcard: isIt ? "Wildcard" : "Wildcard",
-    warning: isIt
-      ? "Nessun crawler AI configurato esplicitamente in robots.txt - consigliato aggiungere regole specifiche."
-      : "No AI crawler is explicitly configured in robots.txt - add dedicated crawler rules.",
+    title: "AI Crawler Access Matrix",
+    configured: "configured",
+    crawler: "Crawler",
+    company: "Company",
+    type: "Type",
+    access: "Access",
+    config: "Config.",
+    tier: "Tier",
+    explicit: "Explicit",
+    wildcard: "Wildcard",
+    warning: "No AI crawler is explicitly configured in robots.txt - add dedicated crawler rules.",
   };
 
   const accessLabels = {
-    blocked: isIt ? "Bloccato" : "Blocked",
-    blocked_via_wildcard: isIt ? "Bloccato (*)" : "Blocked (*)",
-    partial: isIt ? "Parziale" : "Partial",
-    partial_via_wildcard: isIt ? "Parziale (*)" : "Partial (*)",
-    allowed: isIt ? "Consentito" : "Allowed",
-    allowed_via_wildcard: isIt ? "Consentito (*)" : "Allowed (*)",
-    unknown: isIt ? "Sconosciuto" : "Unknown",
+    blocked: "Blocked",
+    blocked_via_wildcard: "Blocked (*)",
+    partial: "Partial",
+    partial_via_wildcard: "Partial (*)",
+    allowed: "Allowed",
+    allowed_via_wildcard: "Allowed (*)",
+    unknown: "Unknown",
   };
 
   return (
@@ -86,8 +83,8 @@ export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
                   <td className="py-2">
                     {c.tier && (
                       <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${c.tier === 1 ? "bg-emerald-400/20 text-emerald-100 border-emerald-300/40" :
-                          c.tier === 2 ? "bg-sky-400/20 text-sky-100 border-sky-300/40" :
-                            "bg-slate-400/20 text-slate-300 border-slate-300/30"
+                        c.tier === 2 ? "bg-sky-400/20 text-sky-100 border-sky-300/40" :
+                          "bg-slate-400/20 text-slate-300 border-slate-300/30"
                         }`}>T{c.tier}</span>
                     )}
                   </td>

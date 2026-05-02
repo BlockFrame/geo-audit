@@ -23,27 +23,24 @@ const getBarColor = (value: number) => {
 const scoreValue = (value: number | undefined) => value ?? 0;
 
 export default function VerboseReportPanel({ report, locale = "en" }: Props) {
-  const isIt = locale === "it";
   const breakdown = Object.entries(report.score_breakdown ?? {});
   const platformScores = Object.entries(report.platform_readiness?.platform_scores ?? {});
 
   const topMetrics = [
     { label: "GEO Score", value: `${report.geo_score ?? "n/a"}/100` },
-    { label: isIt ? "Citabilita" : "Citability", value: `${report.citability_score ?? "n/a"}/100` },
-    { label: isIt ? "Tecnico" : "Technical", value: `${report.technical_audit?.score ?? "n/a"}/100` },
-    { label: isIt ? "Contenuto" : "Content", value: `${report.content_quality?.score ?? "n/a"}/100` },
+    { label: "Citability", value: `${report.citability_score ?? "n/a"}/100` },
+    { label: "Technical", value: `${report.technical_audit?.score ?? "n/a"}/100` },
+    { label: "Content", value: `${report.content_quality?.score ?? "n/a"}/100` },
   ];
 
   return (
     <section className="glass-panel rounded-2xl p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wider text-slate-400">{isIt ? "Report verboso completo" : "Full verbose report"}</p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-100">{isIt ? "Audit GEO dettagliato" : "Detailed GEO audit"}</h2>
+          <p className="text-xs uppercase tracking-wider text-slate-400">Full verbose report</p>
+          <h2 className="mt-1 text-xl font-semibold text-slate-100">Detailed GEO audit</h2>
           <p className="mt-2 text-sm text-slate-300/80">
-            {isIt
-              ? "Vista consolidata del report finale con score breakdown, readiness per piattaforma e accesso diretto all'export."
-              : "Consolidated view of the final report with score breakdown, platform readiness, and direct export access."}
+            Consolidated view of the final report with score breakdown, platform readiness, and direct export access.
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             {topMetrics.map((metric) => (
@@ -61,9 +58,9 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
 
       <div className="mt-6 grid gap-5 xl:grid-cols-2">
         <div className="glass-panel-strong rounded-2xl p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">{isIt ? "Dettaglio Punteggi" : "Score Breakdown"}</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Score Breakdown</h3>
           <div className="mt-4 space-y-3">
-            {breakdown.length === 0 && <p className="text-sm text-slate-400">{isIt ? "Nessun dato disponibile." : "No data available."}</p>}
+            {breakdown.length === 0 && <p className="text-sm text-slate-400">No data available.</p>}
             {breakdown.map(([label, details]) => {
               const value = scoreValue(details?.score);
               return (
@@ -85,9 +82,9 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
         </div>
 
         <div className="glass-panel-strong rounded-2xl p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">{isIt ? "Readiness Piattaforme AI" : "AI Platform Readiness"}</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">AI Platform Readiness</h3>
           <div className="mt-4 space-y-3">
-            {platformScores.length === 0 && <p className="text-sm text-slate-400">{isIt ? "Nessun dato disponibile." : "No data available."}</p>}
+            {platformScores.length === 0 && <p className="text-sm text-slate-400">No data available.</p>}
             {platformScores.map(([label, value]) => (
               <div key={label}>
                 <div className="mb-1 flex items-baseline justify-between gap-3">

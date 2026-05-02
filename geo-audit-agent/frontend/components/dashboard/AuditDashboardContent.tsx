@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  trackAuditCompleted,
-  trackReportViewed,
-} from "@/lib/analytics";
 import ActionPlanCards from "@/components/ActionPlanCards";
 import BrandPresencePanel from "@/components/BrandPresencePanel";
 import CitabilityPanel from "@/components/CitabilityPanel";
@@ -12,6 +8,10 @@ import LlmsTxtPreview from "@/components/LlmsTxtPreview";
 import SchemaReport from "@/components/SchemaReport";
 import TechnicalChecksPanel from "@/components/TechnicalChecksPanel";
 import VerboseReportPanel from "@/components/VerboseReportPanel";
+import {
+  trackAuditCompleted,
+  trackReportViewed,
+} from "@/lib/analytics";
 import { GeoAuditState } from "@/lib/types";
 
 type AppLocale = "it" | "en";
@@ -64,7 +64,7 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
         <div className="mb-6 flex items-center gap-3 p-3 glass-chip rounded-xl slide-up">
           <div className="w-2 h-2 bg-cyan-300 rounded-full animate-ping" />
           <span className="text-cyan-200 text-sm">
-            {text.runningPrefix}{state.url ? <> su <span className="font-mono text-xs">{state.url}</span></> : ""}...
+            {text.runningPrefix}{state.url ? <> on <span className="font-mono text-xs">{state.url}</span></> : ""}...
           </span>
         </div>
       )}

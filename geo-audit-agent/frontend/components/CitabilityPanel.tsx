@@ -7,13 +7,13 @@ type Props = {
     locale?: "it" | "en";
 };
 
-const SUB_LABELS: Record<string, { en: string; it: string; desc_en: string; desc_it: string }> = {
-    answer_passages: { en: "Answer passages", it: "Passaggi risposta", desc_en: "Q&A / FAQ headers", desc_it: "Header FAQ / domande" },
-    factual_density: { en: "Factual density", it: "Densità fattuale", desc_en: "Numbers, stats, %", desc_it: "Numeri, statistiche, %" },
-    authority_signals: { en: "Authority signals", it: "Segnali di autorità", desc_en: "Source citations", desc_it: "Citazioni di fonte" },
-    content_length: { en: "Content length", it: "Lunghezza contenuto", desc_en: "Word count depth", desc_it: "Profondità del testo" },
-    structured_content: { en: "Structure", it: "Struttura", desc_en: "Lists & tables", desc_it: "Liste e tabelle" },
-    unique_data: { en: "Unique data", it: "Dati unici", desc_en: "Original statistics", desc_it: "Statistiche originali" },
+const SUB_LABELS: Record<string, { en: string; desc_en: string }> = {
+    answer_passages: { en: "Answer passages", desc_en: "Q&A / FAQ headers" },
+    factual_density: { en: "Factual density", desc_en: "Numbers, stats, %" },
+    authority_signals: { en: "Authority signals", desc_en: "Source citations" },
+    content_length: { en: "Content length", desc_en: "Word count depth" },
+    structured_content: { en: "Structure", desc_en: "Lists & tables" },
+    unique_data: { en: "Unique data", desc_en: "Original statistics" },
 };
 
 const VERDICT_STYLE: Record<string, string> = {
@@ -29,12 +29,11 @@ const SCORE_COLOR = (s: number) =>
     s >= 70 ? "#2dd4bf" : s >= 40 ? "#fbbf24" : "#fb7185";
 
 export default function CitabilityPanel({ score, verdict, details, locale = "en" }: Props) {
-    const isIt = locale === "it";
     const entries = details ? Object.entries(details) : [];
     const verdictLabel: Record<string, string> = {
-        high: isIt ? "Alta citabilità" : "High citability",
-        medium: isIt ? "Media citabilità" : "Medium citability",
-        low: isIt ? "Bassa citabilità" : "Low citability",
+        high: "High citability",
+        medium: "Medium citability",
+        low: "Low citability",
     };
 
     return (
@@ -43,12 +42,10 @@ export default function CitabilityPanel({ score, verdict, details, locale = "en"
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-                        {isIt ? "Score di Citabilità AI" : "AI Citability Score"}
+                        AI Citability Score
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                        {isIt
-                            ? "Quanto è probabile che i modelli AI citino questo sito"
-                            : "How likely AI models are to quote or reference this content"}
+                        How likely AI models are to quote or reference this content
                     </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
@@ -74,10 +71,10 @@ export default function CitabilityPanel({ score, verdict, details, locale = "en"
                             <div key={key}>
                                 <div className="flex items-baseline justify-between mb-1 gap-2">
                                     <span className="text-xs text-slate-200 truncate">
-                                        {isIt ? (cfg?.it ?? key) : (cfg?.en ?? key)}
+                                        {cfg?.en ?? key}
                                     </span>
                                     <span className="text-[11px] text-slate-400 shrink-0">
-                                        {value}/10 · {isIt ? (cfg?.desc_it ?? "") : (cfg?.desc_en ?? "")}
+                                        {value}/10 · {cfg?.desc_en ?? ""}
                                     </span>
                                 </div>
                                 <div className="h-2 bg-slate-700/40 rounded-full overflow-hidden">
@@ -92,16 +89,14 @@ export default function CitabilityPanel({ score, verdict, details, locale = "en"
                 </div>
             ) : (
                 <p className="text-xs text-slate-400">
-                    {isIt ? "Dati di dettaglio non disponibili." : "Detailed breakdown not available."}
+                    Detailed breakdown not available.
                 </p>
             )}
 
             {/* Interpretation note */}
             <div className="mt-4 rounded-lg border border-cyan-300/20 bg-cyan-400/8 px-3 py-2">
                 <p className="text-[11px] text-cyan-100/80 leading-relaxed">
-                    {isIt
-                        ? "I modelli AI citano preferibilmente contenuti con risposta diretta a domande, alta densità statistica e struttura chiara."
-                        : "AI models preferentially cite content with direct answers to questions, high statistical density, and clear structure."}
+                    AI models preferentially cite content with direct answers to questions, high statistical density, and clear structure.
                 </p>
             </div>
         </div>

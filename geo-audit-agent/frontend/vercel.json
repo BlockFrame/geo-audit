@@ -1,35 +1,36 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "nodejs": "20",
-  "env": {
-    "NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL": {
-      "description": "CopilotKit runtime endpoint",
-      "default": "/api/copilotkit"
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
+    "installCommand": "npm install",
+    "framework": "nextjs",
+    "env": {
+        "NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL": {
+            "description": "CopilotKit runtime endpoint",
+            "default": "/api/copilotkit"
+        },
+        "OPENROUTER_API_KEY": {
+            "description": "OpenRouter API key for LLM provider",
+            "required": true
+        },
+        "OPENROUTER_BASE_URL": {
+            "description": "OpenRouter base URL",
+            "default": "https://openrouter.ai/api/v1"
+        },
+        "OPENROUTER_MODEL": {
+            "description": "OpenRouter model identifier",
+            "default": "openrouter/free"
+        }
     },
-    "OPENROUTER_API_KEY": {
-      "description": "OpenRouter API key for LLM provider",
-      "required": true
+    "regions": [
+        "iad1"
+    ],
+    "git": {
+        "deploymentEnabled": {
+            "main": true
+        }
     },
-    "OPENROUTER_BASE_URL": {
-      "description": "OpenRouter base URL",
-      "default": "https://openrouter.ai/api/v1"
-    },
-    "OPENROUTER_MODEL": {
-      "description": "OpenRouter model identifier",
-      "default": "openrouter/free"
+    "analytics": {
+        "enabled": true
     }
-  },
-  "regions": ["iad1"],
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  },
-  "analytics": {
-    "enabled": true
-  }
 }

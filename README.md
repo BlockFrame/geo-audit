@@ -117,34 +117,37 @@ The final GEO score is weighted across six categories:
 ## Project Structure
 
 ```text
-GEO-AUDIT-APP/
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   └── agent/
-│       ├── graph.py
-│       ├── model_provider.py
-│       ├── prompts.py
-│       ├── state.py
-│       └── tools/
-│           └── geo_tools.py
-├── frontend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── copilotkit/
-│   │   │   └── report/
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
-│   └── public/
-├── docs/
-│   ├── app-analysis-en.md
-│   ├── solution-architecture-en.md
-│   ├── technical-architecture-en.md
-│   └── solution-improvement-roadmap-en.md
+geo-audit-app/
+├── geo-audit-agent/
+│   ├── backend/
+│   │   ├── main.py
+│   │   ├── requirements.txt
+│   │   └── agent/
+│   │       ├── graph.py
+│   │       ├── model_provider.py
+│   │       ├── prompts.py
+│   │       ├── state.py
+│   │       └── tools/
+│   │           └── geo_tools.py
+│   ├── frontend/
+│   │   ├── app/
+│   │   │   ├── api/
+│   │   │   │   ├── copilotkit/
+│   │   │   │   └── report/
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   └── public/
+│   ├── docs/
+│   │   ├── app-analysis-en.md
+│   │   ├── solution-architecture-en.md
+│   │   ├── technical-architecture-en.md
+│   │   └── solution-improvement-roadmap-en.md
+│   ├── render.yaml
+│   └── README.md
 └── README.md
 ```
 
@@ -153,7 +156,7 @@ GEO-AUDIT-APP/
 ### 1. Backend Setup
 
 ```powershell
-cd GEO-AUDIT-APP\backend
+cd geo-audit-agent/backend
 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -162,7 +165,7 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Edit `backend/.env` and select one provider.
+Edit `geo-audit-agent/backend/.env` and select one provider.
 
 Example with OpenAI:
 
@@ -181,7 +184,7 @@ uvicorn main:app --reload --port 8000
 ### 2. Frontend Setup
 
 ```powershell
-cd GEO-AUDIT-APP\frontend
+cd geo-audit-agent/frontend
 
 npm install
 copy .env.local.example .env.local
@@ -263,7 +266,7 @@ This split fits the current architecture well because the frontend is a Next.js 
 
 ### Deploying the Backend to Render
 
-The repository now includes a Render blueprint file at `render.yaml`.
+The repository includes a Render blueprint file at `geo-audit-agent/render.yaml`.
 
 Render service characteristics:
 
@@ -275,7 +278,7 @@ Render service characteristics:
 You can deploy it in two ways:
 
 1. Create the service manually in Render and point it to the repository.
-2. Use the `render.yaml` blueprint from the repository root.
+2. Use the `render.yaml` blueprint from the project folder.
 
 Required backend environment variables on Render:
 
@@ -315,7 +318,7 @@ https://geo-audit-app-backend.onrender.com
 
 ### Deploying the Frontend to Vercel
 
-Deploy the `frontend/` directory as the Vercel project root.
+Deploy the `geo-audit-agent/frontend/` directory as the Vercel project root.
 
 Required frontend environment variables on Vercel:
 
@@ -349,132 +352,6 @@ Vercel build settings:
 5. Update `FRONTEND_ORIGINS` on Render with the final Vercel production domain.
 6. Optionally set `FRONTEND_ORIGIN_REGEX` to allow Vercel preview deployments.
 
-### Step-by-Step Deployment Walkthrough
-
-Use this sequence for the first real deployment.
-
-#### Step 1: Prepare the repository
-
-1. Push the repository to GitHub.
-2. Verify that `render.yaml` is present in the repository root.
-3. Make sure no real secrets are committed.
-4. Decide which LLM provider you want to use in production.
-
-#### Step 2: Deploy the backend on Render
-
-1. Log in to Render.
-2. Click `New +`.
-3. Choose `Blueprint` if you want Render to read `render.yaml`, or choose `Web Service` if you prefer manual setup.
-4. Connect the GitHub repository.
-5. If you use manual setup, configure:
-	- runtime: `Python 3`,
-	- root directory: `backend`,
-	- build command: `pip install -r requirements.txt`,
-	- start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`.
-6. Add the required environment variables.
-7. Click deploy.
-8. Wait until the service is live, then copy the public URL.
-
-Expected backend URL format:
-
-```text
-https://geo-audit-app-backend.onrender.com
-```
-
-#### Step 3: Configure backend environment variables on Render
-
-At minimum, set:
-
-```env
-FRONTEND_ORIGINS=https://placeholder.vercel.app
-FRONTEND_ORIGIN_REGEX=https://.*\.vercel\.app
-LLM_PROVIDER=openai
-OPENAI_API_KEY=<your_key>
-OPENAI_MODEL=gpt-4o
-```
-
-If you use OpenRouter instead:
-
-```env
-FRONTEND_ORIGINS=https://placeholder.vercel.app
-FRONTEND_ORIGIN_REGEX=https://.*\.vercel\.app
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=<your_key>
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_MODEL=openrouter/free
-OPENROUTER_REQUIRE_FREE=true
-OPENROUTER_HTTP_REFERER=https://placeholder.vercel.app
-OPENROUTER_APP_TITLE=GEO-AUDIT-APP
-```
-
-You will replace the placeholder Vercel domain after the frontend is deployed.
-
-#### Step 4: Verify the backend before deploying the frontend
-
-Open these URLs in the browser:
-
-```text
-https://<your-render-domain>/health
-https://<your-render-domain>/copilotkit/info
-```
-
-The `/health` endpoint should return a JSON payload with `status: ok`.
-
-#### Step 5: Deploy the frontend on Vercel
-
-1. Log in to Vercel.
-2. Click `Add New...` then `Project`.
-3. Import the GitHub repository.
-4. Set the project root directory to `frontend`.
-5. Confirm the framework as `Next.js`.
-6. Add the required environment variables before the first deploy.
-7. Start the deployment.
-
-Use these frontend environment variables:
-
-```env
-BACKEND_URL=https://<your-render-domain>/copilotkit
-BACKEND_AGUI_URL=https://<your-render-domain>/agui/default
-NEXT_PUBLIC_LINKEDIN_URL=https://www.linkedin.com/in/rossi-stefano/
-NEXT_PUBLIC_FEEDBACK_FORM_URL=https://docs.google.com/forms/d/e/1FAIpQLSeOOb2vsD94lpUBTBlHX2S_wgFYOlMJ2jzXTtZ8WUzYhcuqMg/viewform?usp=dialog
-```
-
-#### Step 6: Finalize the backend CORS configuration
-
-1. Copy the final Vercel production domain.
-2. Go back to Render environment variables.
-3. Replace `FRONTEND_ORIGINS` with the real production frontend URL.
-4. Keep `FRONTEND_ORIGIN_REGEX` if you also want preview deployments to work.
-5. Save and redeploy the Render service if required.
-
-Example:
-
-```env
-FRONTEND_ORIGINS=https://geo-audit-app.vercel.app
-FRONTEND_ORIGIN_REGEX=https://.*\.vercel\.app
-```
-
-#### Step 7: End-to-end verification
-
-After both services are live, verify the following:
-
-1. Opening the Vercel URL loads the UI correctly.
-2. Submitting an audit request starts the backend workflow.
-3. The dashboard updates after the audit completes.
-4. Markdown and PDF export still work.
-5. Guardrail messages still work for unsafe prompts.
-6. The browser console does not show CORS failures.
-
-#### Step 8: Recommended first production adjustments
-
-Once the first deployment works, make these follow-up adjustments:
-
-1. Replace placeholder domains in provider-specific variables such as `OPENROUTER_HTTP_REFERER`.
-2. Rotate any key that was ever stored in a local `.env` file and could have been exposed.
-3. Add a custom domain if you want stable URLs.
-4. Add analytics only after the core flow is stable.
-5. Move away from free tiers if cold starts hurt the user experience.
-
 ### Free-Tier Notes
 
 This stack is suitable for a first deployment on low-cost or free tiers, but there are practical limits:
@@ -493,30 +370,19 @@ This stack is suitable for a first deployment on low-cost or free tiers, but the
 5. Review the dashboard panels and the assistant summary.
 6. Export the report if needed.
 
-## Generative UI and Shared Report State
-
-The frontend supports both inline generative UI and dashboard rendering.
-
-Key UI actions include:
-
-| Action | Component | Role |
-| --- | --- | --- |
-| `display_geo_score` | `ScoreGauge` | Overall GEO score visualization |
-| `display_crawler_matrix` | `CrawlerMatrix` | AI crawler access matrix |
-| `display_action_plan` | `ActionPlanCards` | Prioritized action plan |
-| `display_llms_txt` | `LlmsTxtPreview` | Suggested `llms.txt` content |
-| `display_schema_report` | `SchemaReport` | Schema markup findings |
-
-In addition, the dashboard consumes a shared `GeoAuditState` object synchronized through `useCoAgent`, which keeps the report visible even when chat is not the only rendering surface.
-
-## Report Export
+## Report Export and Analytics
 
 The app supports exporting the current structured report as:
 
 - Markdown
 - PDF
 
-The export route lives in the frontend server layer and converts the current `GeoReport` payload into downloadable artifacts.
+Recent additions include:
+
+- business-oriented report modes (verbose, executive, checklist),
+- audience targeting (executive, marketing, technical),
+- branded header metadata in generated PDF,
+- Vercel Analytics and Speed Insights integration.
 
 ## Security and Operational Notes
 
@@ -538,26 +404,21 @@ Before any public or client-facing deployment, you should still review:
 
 ## Documentation
 
-Detailed project documentation is available under `docs/`:
+Detailed project documentation is available under `geo-audit-agent/docs/`:
 
-- `docs/app-analysis-en.md`: functional and product-oriented analysis
-- `docs/solution-architecture-en.md`: system-level solution architecture
-- `docs/technical-architecture-en.md`: implementation-oriented technical architecture
-- `docs/solution-improvement-roadmap-en.md`: objective functional and technical improvement backlog
+- `app-analysis-en.md`: functional and product-oriented analysis
+- `solution-architecture-en.md`: system-level solution architecture
+- `technical-architecture-en.md`: implementation-oriented technical architecture
+- `solution-improvement-roadmap-en.md`: objective functional and technical improvement backlog
+- `DEPLOYMENT_CHECKLIST.md`: deployment checklist for Render + Vercel
+- `VERCEL_ANALYTICS_SETUP.md`: analytics events and setup notes
 
 Recommended reading order:
 
-1. `docs/app-analysis-en.md`
-2. `docs/solution-architecture-en.md`
-3. `docs/technical-architecture-en.md`
-4. `docs/solution-improvement-roadmap-en.md`
-
-## Development Notes
-
-- The backend currently favors a single aggregated audit call through `compile_geo_report(url)`.
-- The LangGraph layer includes a fallback that reconstructs text-form tool calls when a provider does not emit structured tool calls reliably.
-- After the report tool returns, the backend maps the result directly into shared state and generates the final summary without a second LLM roundtrip.
-- The frontend proxy normalizes CopilotKit traffic and handles the `agent/connect` handshake explicitly.
+1. `geo-audit-agent/docs/app-analysis-en.md`
+2. `geo-audit-agent/docs/solution-architecture-en.md`
+3. `geo-audit-agent/docs/technical-architecture-en.md`
+4. `geo-audit-agent/docs/solution-improvement-roadmap-en.md`
 
 ## License and Usage Notes
 

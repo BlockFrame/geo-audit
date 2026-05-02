@@ -8,36 +8,35 @@ type CheckEval = "good_if_true" | "bad_if_true" | "good_if_one" | "count_low_is_
 
 type CheckConfig = {
     en: string;
-    it: string;
     eval: CheckEval;
     group: "core" | "rendering" | "security" | "perf";
 };
 
 const CHECKS: Record<string, CheckConfig> = {
-    https: { en: "HTTPS", it: "HTTPS", eval: "good_if_true", group: "core" },
-    viewport: { en: "Viewport meta", it: "Viewport meta", eval: "good_if_true", group: "core" },
-    canonical: { en: "Canonical tag", it: "Tag canonical", eval: "good_if_true", group: "core" },
-    lang: { en: "HTML lang attr", it: "Attributo HTML lang", eval: "good_if_true", group: "core" },
-    indexable: { en: "Indexable", it: "Indicizzabile", eval: "good_if_true", group: "core" },
-    sitemap_declared: { en: "Sitemap declared", it: "Sitemap dichiarata", eval: "good_if_true", group: "core" },
-    h1_count: { en: "Single H1", it: "H1 unico", eval: "good_if_one", group: "core" },
-    ssr_ok: { en: "Server-side rendering", it: "SSR attivo", eval: "good_if_true", group: "rendering" },
-    is_spa: { en: "SPA detected (risk)", it: "SPA rilevata (rischio)", eval: "bad_if_true", group: "rendering" },
-    security_hsts: { en: "HSTS header", it: "Header HSTS", eval: "good_if_true", group: "security" },
-    security_csp: { en: "Content-Security-Policy", it: "Content-Security-Policy", eval: "good_if_true", group: "security" },
-    security_xcto: { en: "X-Content-Type-Options", it: "X-Content-Type-Options", eval: "good_if_true", group: "security" },
-    security_xfo: { en: "X-Frame-Options", it: "X-Frame-Options", eval: "good_if_true", group: "security" },
-    security_referrer: { en: "Referrer-Policy", it: "Referrer-Policy", eval: "good_if_true", group: "security" },
-    indexnow: { en: "IndexNow protocol", it: "Protocollo IndexNow", eval: "good_if_true", group: "perf" },
-    cls_risk: { en: "CLS risk", it: "Rischio CLS", eval: "bad_if_true", group: "perf" },
-    images_without_dimensions: { en: "Images w/o dimensions", it: "Immagini senza dimensioni", eval: "count_low_is_good", group: "perf" },
+    https: { en: "HTTPS", eval: "good_if_true", group: "core" },
+    viewport: { en: "Viewport meta", eval: "good_if_true", group: "core" },
+    canonical: { en: "Canonical tag", eval: "good_if_true", group: "core" },
+    lang: { en: "HTML lang attr", eval: "good_if_true", group: "core" },
+    indexable: { en: "Indexable", eval: "good_if_true", group: "core" },
+    sitemap_declared: { en: "Sitemap declared", eval: "good_if_true", group: "core" },
+    h1_count: { en: "Single H1", eval: "good_if_one", group: "core" },
+    ssr_ok: { en: "Server-side rendering", eval: "good_if_true", group: "rendering" },
+    is_spa: { en: "SPA detected (risk)", eval: "bad_if_true", group: "rendering" },
+    security_hsts: { en: "HSTS header", eval: "good_if_true", group: "security" },
+    security_csp: { en: "Content-Security-Policy", eval: "good_if_true", group: "security" },
+    security_xcto: { en: "X-Content-Type-Options", eval: "good_if_true", group: "security" },
+    security_xfo: { en: "X-Frame-Options", eval: "good_if_true", group: "security" },
+    security_referrer: { en: "Referrer-Policy", eval: "good_if_true", group: "security" },
+    indexnow: { en: "IndexNow protocol", eval: "good_if_true", group: "perf" },
+    cls_risk: { en: "CLS risk", eval: "bad_if_true", group: "perf" },
+    images_without_dimensions: { en: "Images w/o dimensions", eval: "count_low_is_good", group: "perf" },
 };
 
-const GROUPS: { key: "core" | "rendering" | "security" | "perf"; en: string; it: string }[] = [
-    { key: "core", en: "Core SEO", it: "Core SEO" },
-    { key: "rendering", en: "Rendering", it: "Rendering" },
-    { key: "security", en: "Security Headers", it: "Header di Sicurezza" },
-    { key: "perf", en: "Performance & Indexing", it: "Performance & Indicizzazione" },
+const GROUPS: { key: "core" | "rendering" | "security" | "perf"; en: string }[] = [
+    { key: "core", en: "Core SEO" },
+    { key: "rendering", en: "Rendering" },
+    { key: "security", en: "Security Headers" },
+    { key: "perf", en: "Performance & Indexing" },
 ];
 
 function resolveStatus(key: string, value: boolean | number | string | undefined, evalType: CheckEval): "pass" | "fail" | "warn" {
@@ -69,7 +68,6 @@ const STATUS_DOT: Record<"pass" | "fail" | "warn", string> = {
 };
 
 export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
-    const isIt = locale === "it";
     const checks = audit.checks ?? {};
     const issues = audit.issues ?? [];
     const score = audit.score ?? 0;
@@ -85,10 +83,10 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
             <div className="flex items-center justify-between mb-5">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-                        {isIt ? "Controlli Tecnici" : "Technical Checks"}
+                        Technical Checks
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                        {passCount}/{Object.keys(CHECKS).length} {isIt ? "superati" : "passed"}
+                        {passCount}/{Object.keys(CHECKS).length} passed
                     </p>
                 </div>
                 <span className="text-2xl font-bold" style={{ color: scoreColor }}>
@@ -102,7 +100,7 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
                     return (
                         <div key={group.key} className="glass-panel-strong rounded-xl p-3">
                             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2.5">
-                                {isIt ? group.it : group.en}
+                                {group.en}
                             </p>
                             <div className="space-y-1.5">
                                 {keys.map(([key, cfg]) => {
@@ -116,7 +114,7 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
                                         >
                                             <span className="flex items-center gap-1.5 truncate">
                                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[status]}`} />
-                                                {isIt ? cfg.it : cfg.en}
+                                                {cfg.en}
                                             </span>
                                             <span className="font-mono shrink-0">{disp}</span>
                                         </div>
@@ -131,7 +129,7 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
             {issues.length > 0 && (
                 <div>
                     <p className="text-[11px] text-slate-400 uppercase tracking-wider mb-2">
-                        {isIt ? "Problemi rilevati" : "Detected issues"}
+                        Detected issues
                     </p>
                     <ul className="space-y-1">
                         {issues.map((issue, i) => (

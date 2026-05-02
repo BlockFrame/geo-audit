@@ -1,9 +1,9 @@
 "use client";
 
 import {
+  trackExportAudienceChanged,
   trackExportDownloaded,
   trackExportModeChanged,
-  trackExportAudienceChanged,
 } from "@/lib/analytics";
 import { GeoReport } from "@/lib/types";
 import { useState } from "react";
@@ -23,34 +23,30 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
   const [mode, setMode] = useState<ReportMode>("executive");
   const [audience, setAudience] = useState<ExportAudience>("executive");
   const [brandName, setBrandName] = useState("GEO Audit Agent");
-  const isIt = locale === "it";
-
   const labels = {
-    reportTitle: isIt ? "Report completo" : "Full report",
-    exportTitle: isIt ? "Export dalla chat" : "Export from chat",
-    exportBody: isIt
-      ? "Scarica report business-oriented in Markdown o PDF con template, audience e modalita."
-      : "Download business-oriented reports in Markdown or PDF with template, audience, and mode.",
-    score: isIt ? "Score" : "Score",
-    preparing: isIt ? "Preparazione" : "Preparing",
-    downloadMd: isIt ? "Scarica MD" : "Download MD",
-    downloadPdf: isIt ? "Scarica PDF" : "Download PDF",
-    exportFailed: isIt ? "Export non riuscito" : "Export failed",
-    audience: isIt ? "Audience" : "Audience",
-    mode: isIt ? "Modalita" : "Mode",
-    brandTemplate: isIt ? "Template brand" : "Brand template",
+    reportTitle: "Full report",
+    exportTitle: "Export from chat",
+    exportBody: "Download business-oriented reports in Markdown or PDF with template, audience, and mode.",
+    score: "Score",
+    preparing: "Preparing",
+    downloadMd: "Download MD",
+    downloadPdf: "Download PDF",
+    exportFailed: "Export failed",
+    audience: "Audience",
+    mode: "Mode",
+    brandTemplate: "Brand template",
   };
 
   const audienceLabels: Record<ExportAudience, string> = {
-    executive: isIt ? "Executive" : "Executive",
-    marketing: isIt ? "Marketing" : "Marketing",
-    technical: isIt ? "Technical" : "Technical",
+    executive: "Executive",
+    marketing: "Marketing",
+    technical: "Technical",
   };
 
   const modeLabels: Record<ReportMode, string> = {
-    verbose: isIt ? "Completo" : "Verbose",
-    executive: isIt ? "Executive summary" : "Executive summary",
-    checklist: isIt ? "Checklist" : "Checklist",
+    verbose: "Verbose",
+    executive: "Executive summary",
+    checklist: "Checklist",
   };
 
   const buttonLabels: Record<ExportFormat, string> = {

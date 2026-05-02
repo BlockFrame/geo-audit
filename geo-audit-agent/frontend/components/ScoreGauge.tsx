@@ -9,14 +9,13 @@ type Props = {
 };
 
 export default function ScoreGauge({ score, breakdown, locale = "en" }: Props) {
-  const isIt = locale === "it";
   const radius = 80;
   const stroke = 16;
   const circumference = Math.PI * radius;           // half-circle arc length
   const filled = (score / 100) * circumference;
   const color = score >= 70 ? "#2dd4bf" : score >= 45 ? "#fbbf24" : "#fb7185";
-  const label = score >= 70 ? (isIt ? "Buono" : "Good") : score >= 45 ? (isIt ? "Moderato" : "Moderate") : (isIt ? "Critico" : "Critical");
-  const title = isIt ? "GEO Score Complessivo" : "Overall GEO Score";
+  const label = score >= 70 ? "Good" : score >= 45 ? "Moderate" : "Critical";
+  const title = "Overall GEO Score";
 
   return (
     <div className="glass-panel rounded-2xl p-6">

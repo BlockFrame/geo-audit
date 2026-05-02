@@ -72,9 +72,18 @@ Should exist with:
 ```json
 {
   "framework": "nextjs",
-  "nodejs": "20",
   "buildCommand": "npm run build",
   "analytics": { "enabled": true }
+}
+```
+
+Node.js version should be declared in `frontend/package.json` via:
+
+```json
+{
+  "engines": {
+    "node": "20.x"
+  }
 }
 ```
 

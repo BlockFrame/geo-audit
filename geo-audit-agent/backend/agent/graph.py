@@ -58,13 +58,6 @@ BLOCKED_CHAT_PATTERNS = [
     re.compile(r"\b(jailbreak|prompt injection|dan)\b", re.IGNORECASE),
 ]
 
-ITALIAN_HINTS = {
-    "ciao", "audit", "analizza", "fammi", "sito", "problemi", "criticita",
-    "punteggio", "quale", "perche", "perché", "come", "devo", "vorrei",
-    "italiano", "inglese", "riassunto", "rapporto", "veloce",
-}
-
-
 def _message_text(content) -> str:
     if isinstance(content, str):
         return content
@@ -84,18 +77,6 @@ def _message_text(content) -> str:
 
 
 def _detect_language(state: GeoAuditState) -> str:
-    for message in reversed(state.get("messages", [])):
-        if isinstance(message, HumanMessage) or getattr(message, "type", None) == "human":
-            text = _message_text(getattr(message, "content", "")).strip().lower()
-            if not text:
-                continue
-
-            hint_hits = sum(1 for hint in ITALIAN_HINTS if hint in text)
-            accented_hits = len(re.findall(r"[àèéìòù]", text))
-            if accented_hits > 0 or hint_hits >= 2:
-                return "it"
-            return "en"
-
     return "en"
 
 
@@ -124,14 +105,6 @@ def _latest_user_text(state: GeoAuditState) -> str:
 
 
 def _guardrail_message(language: str, kind: str) -> str:
-    if language == "it":
-        if kind == "scope":
-            return (
-                "Posso aiutare solo con audit GEO su siti web pubblici. "
-                "Non posso fornire istruzioni su exploit, bypass, prompt interni, segreti o credenziali."
-            )
-        return "Posso analizzare solo URL pubblici http(s). Non usare host locali, indirizzi privati o endpoint interni."
-
     if kind == "scope":
         return (
             "I can only help with GEO audits for public websites. "

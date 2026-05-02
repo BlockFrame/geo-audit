@@ -7,12 +7,12 @@ import CrawlerMatrix from "@/components/CrawlerMatrix";
 import LlmsTxtPreview from "@/components/LlmsTxtPreview";
 import SchemaReport from "@/components/SchemaReport";
 import ScoreGauge from "@/components/ScoreGauge";
-import { GeoAuditState } from "@/lib/types";
 import {
   buildReadableReportContext,
   extractPlatformGaps,
   filterRecommendations,
 } from "@/lib/copilot/report-helpers";
+import { GeoAuditState } from "@/lib/types";
 
 type AppLocale = "it" | "en";
 
@@ -47,9 +47,7 @@ export function useGeoAuditCopilot({ state, locale, labels }: Props) {
   });
 
   useCopilotReadable({
-    description: locale === "it"
-      ? "Il report contiene raccomandazioni prioritarie, score piattaforme AI, segnali brand, check tecnici, schema markup e template JSON-LD riutilizzabile."
-      : "The report contains prioritized recommendations, AI platform scores, brand signals, technical checks, schema markup findings, and a reusable JSON-LD template.",
+    description: "The report contains prioritized recommendations, AI platform scores, brand signals, technical checks, schema markup findings, and a reusable JSON-LD template.",
     value: readableReportContext,
   });
 
