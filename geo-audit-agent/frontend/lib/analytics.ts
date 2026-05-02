@@ -1,8 +1,9 @@
+import { track } from "@vercel/analytics";
 import { Analytics } from "@vercel/analytics/react";
 
 /**
- * Utility per tracciare eventi custom con Vercel Analytics
- * Tutti gli eventi sono tracciati lato client e inviati a Vercel
+ * Utility to track custom events with Vercel Analytics.
+ * All events are emitted client-side and forwarded to Vercel.
  */
 
 export type EventName =
@@ -41,7 +42,7 @@ export interface AnalyticsEventProps {
 
 /**
  * Track custom event with Vercel Analytics
- * Automatically captures URL pathname, timestamp
+ * Automatically captures pathname and timestamp.
  */
 export const trackEvent = (
     eventName: EventName,
@@ -53,12 +54,8 @@ export const trackEvent = (
     }
 
     try {
-        // Use window.va if available (injected by Vercel Analytics)
-        if (window.va) {
-            window.va.track(eventName, properties || {});
-        }
+        track(eventName, properties || {});
 
-        // Fallback: log to console in development
         if (process.env.NODE_ENV === "development") {
             console.log(`[Analytics Event] ${eventName}`, properties || {});
         }
@@ -171,17 +168,6 @@ const extractErrorType = (error: string): string => {
     if (lowerError.includes("auth")) return "auth_error";
     return "unknown_error";
 };
-
-/**
- * Global type augmentation for window.va
- */
-declare global {
-    interface Window {
-        va?: {
-            track: (eventName: string, properties?: Record<string, any>) => void;
-        };
-    }
-}
 
 export { Analytics };
 
