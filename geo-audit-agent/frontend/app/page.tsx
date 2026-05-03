@@ -13,7 +13,7 @@ import { GeoAuditState } from "@/lib/types";
 type AppLocale = "it" | "en";
 
 const SOCIAL_LINKS = {
-  discord: "https://discord.com",
+  discord: process.env.NEXT_PUBLIC_DISCORD_URL ?? "https://discord.com",
   linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "https://www.linkedin.com/in/rossi-stefano/",
   bug: process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL ?? "https://github.com/geo-audit/issues/new",
 };

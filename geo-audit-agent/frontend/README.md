@@ -47,6 +47,7 @@ BACKEND_URL=http://127.0.0.1:8000/copilotkit
 BACKEND_AGUI_URL=http://127.0.0.1:8000/agui/default
 
 # Public links (shown in UI)
+NEXT_PUBLIC_DISCORD_URL=https://discord.com/invite/your-server
 NEXT_PUBLIC_LINKEDIN_URL=https://www.linkedin.com/in/your-profile/
 NEXT_PUBLIC_FEEDBACK_FORM_URL=https://your-feedback-form-url
 ```
@@ -56,6 +57,7 @@ For production (Vercel), set these in the [Vercel Dashboard](https://vercel.com/
 ```env
 BACKEND_URL=https://your-render-backend.onrender.com/copilotkit
 BACKEND_AGUI_URL=https://your-render-backend.onrender.com/agui/default
+NEXT_PUBLIC_DISCORD_URL=https://discord.com/invite/your-server
 NEXT_PUBLIC_LINKEDIN_URL=https://www.linkedin.com/in/your-profile/
 NEXT_PUBLIC_FEEDBACK_FORM_URL=https://your-feedback-form-url
 ```
