@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
     open: boolean;
@@ -18,6 +18,8 @@ const WEIGHTS = [
 ];
 
 export default function MethodologyModal({ open, onClose }: Props) {
+    const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
     useEffect(() => {
         if (!open) return;
         const onKeyDown = (event: KeyboardEvent) => {
@@ -25,26 +27,30 @@ export default function MethodologyModal({ open, onClose }: Props) {
         };
 
         document.body.style.overflow = "hidden";
+        const previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        window.setTimeout(() => closeButtonRef.current?.focus(), 0);
         window.addEventListener("keydown", onKeyDown);
         return () => {
             document.body.style.overflow = "";
             window.removeEventListener("keydown", onKeyDown);
+            previousActiveElement?.focus();
         };
     }, [open, onClose]);
 
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" role="dialog" aria-modal="true" aria-label="GEO score methodology">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="methodology-title" aria-describedby="methodology-description">
             <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
             <div className="relative z-10 my-8 mx-4 w-full max-w-3xl rounded-3xl border border-slate-600/40 bg-slate-900/95 shadow-2xl backdrop-blur-xl">
                 <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-slate-700/50 bg-slate-900/90 px-6 py-4 backdrop-blur">
                     <div>
-                        <h1 className="text-lg font-semibold text-slate-100">GEO Score Methodology</h1>
-                        <p className="text-xs text-slate-400 mt-0.5">How KPIs are computed and weighted</p>
+                        <h2 id="methodology-title" className="text-lg font-semibold text-slate-100">GEO Score Methodology</h2>
+                        <p id="methodology-description" className="text-xs text-slate-400 mt-0.5">How KPIs are computed and weighted</p>
                     </div>
                     <button
+                        ref={closeButtonRef}
                         onClick={onClose}
                         className="rounded-xl border border-slate-600/50 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 transition-colors"
                         aria-label="Close"

@@ -36,7 +36,7 @@ The application is divided into two major runtime surfaces.
 
 ### 3.1 Frontend
 
-The frontend is a Next.js 14 application with CopilotKit React integration. It contains:
+The frontend is a Next.js 15 application with CopilotKit React integration. It contains:
 
 - the main dashboard,
 - the chat interface,

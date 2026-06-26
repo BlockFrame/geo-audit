@@ -1,16 +1,23 @@
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from copilotkit import CopilotKitSDK, LangGraphAGUIAgent
 from copilotkit.langgraph_agent import LangGraphAgent as _CKLangGraphAgent
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
 from ag_ui_langgraph.endpoint import add_langgraph_fastapi_endpoint
 
 from agent.graph import graph
+from agent.tools.geo_tools import compile_geo_report, validate_audit_url
+
+
+class AuditRequest(BaseModel):
+    url: str
 
 
 def _parse_origins(raw_value: str | None) -> list[str]:
@@ -101,3 +108,15 @@ add_langgraph_fastapi_endpoint(
 @app.get("/health")
 def health():
     return {"status": "ok", "agent": "default"}
+
+
+@app.post("/audit")
+def run_audit(request: AuditRequest):
+    is_valid, error = validate_audit_url(request.url)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error or "Invalid audit URL")
+
+    try:
+        return json.loads(compile_geo_report.invoke({"url": request.url}))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Audit execution failed") from exc

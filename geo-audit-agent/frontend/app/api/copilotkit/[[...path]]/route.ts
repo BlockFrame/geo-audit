@@ -8,6 +8,7 @@ const BACKEND_AGUI_URL = process.env.BACKEND_AGUI_URL ?? "http://127.0.0.1:8000/
 const BACKEND_COPILOTKIT_URL = RAW_BACKEND_COPILOTKIT_URL.endsWith("/")
     ? RAW_BACKEND_COPILOTKIT_URL
     : `${RAW_BACKEND_COPILOTKIT_URL}/`;
+const MAX_PROXY_REQUEST_BYTES = 1024 * 1024;
 
 const isInfoEndpoint = (req: NextRequest) => req.nextUrl.pathname.endsWith("/info");
 const isRunEndpoint = (req: NextRequest) => /\/agent\/[^/]+\/run$/.test(req.nextUrl.pathname);
@@ -18,11 +19,42 @@ const buildBackendCopilotKitUrl = (req: NextRequest) => {
     return `${BACKEND_COPILOTKIT_URL}${normalizedSuffix}${req.nextUrl.search}`;
 };
 
+const payloadTooLargeResponse = () => Response.json(
+    { error: "Request payload too large" },
+    { status: 413 },
+);
+
+const readBoundedBody = async (req: NextRequest) => {
+    if (req.method === "GET" || req.method === "HEAD") {
+        return undefined;
+    }
+
+    const contentLength = Number(req.headers.get("content-length") ?? "0");
+    if (Number.isFinite(contentLength) && contentLength > MAX_PROXY_REQUEST_BYTES) {
+        throw payloadTooLargeResponse();
+    }
+
+    const rawBody = await req.text();
+    if (Buffer.byteLength(rawBody, "utf8") > MAX_PROXY_REQUEST_BYTES) {
+        throw payloadTooLargeResponse();
+    }
+
+    return rawBody;
+};
+
 const proxyCopilotKitRequest = async (req: NextRequest) => {
     const contentType = req.headers.get("content-type");
     const accept = req.headers.get("accept");
     const authorization = req.headers.get("authorization");
-    const rawBody = req.method === "GET" || req.method === "HEAD" ? undefined : await req.text();
+    let rawBody: string | undefined;
+    try {
+        rawBody = await readBoundedBody(req);
+    } catch (response) {
+        if (response instanceof Response) {
+            return response;
+        }
+        throw response;
+    }
 
     const backendResponse = await fetch(buildBackendCopilotKitUrl(req), {
         method: req.method,
@@ -106,7 +138,17 @@ const normalizeRuntimeInfo = (payload: RuntimeInfoPayload) => {
 
 const proxyInfo = async (req: NextRequest) => {
     const headers: HeadersInit = { "Content-Type": "application/json" };
-    const rawBody = req.method === "POST" ? (await req.text()) || "{}" : "{}";
+    let rawBody = "{}";
+    if (req.method === "POST") {
+        try {
+            rawBody = (await readBoundedBody(req)) || "{}";
+        } catch (response) {
+            if (response instanceof Response) {
+                return response;
+            }
+            throw response;
+        }
+    }
 
     const backendResponse = await fetch(`${BACKEND_COPILOTKIT_URL}info`, {
         method: "POST",
@@ -123,7 +165,15 @@ const proxyInfo = async (req: NextRequest) => {
 };
 
 const proxyRun = async (req: NextRequest) => {
-    const rawBody = (await req.text()) || "{}";
+    let rawBody: string;
+    try {
+        rawBody = (await readBoundedBody(req)) || "{}";
+    } catch (response) {
+        if (response instanceof Response) {
+            return response;
+        }
+        throw response;
+    }
     let requestBody = rawBody;
 
     try {

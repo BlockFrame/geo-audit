@@ -3,12 +3,13 @@
 import { useCoAgent } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useState } from "react";
 
 import AuditDashboardContent from "@/components/dashboard/AuditDashboardContent";
 import MethodologyModal from "@/components/MethodologyModal";
 import { useGeoAuditCopilot } from "@/hooks/useGeoAuditCopilot";
-import { GeoAuditState } from "@/lib/types";
+import { GeoAuditState, GeoReport } from "@/lib/types";
 
 type AppLocale = "it" | "en";
 
@@ -101,12 +102,57 @@ function detectLocale(): AppLocale {
   return navigator.language.toLowerCase().startsWith("it") ? "it" : "en";
 }
 
+function normalizeAuditUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+function extractAuditUrl(value: string) {
+  const urlMatch = value.match(/https?:\/\/[^\s"'\])}]+/i);
+  if (urlMatch) {
+    return normalizeAuditUrl(urlMatch[0]);
+  }
+
+  const domainMatch = value.match(/\b(?:www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/[^\s"'\])}]*)?/i);
+  if (!domainMatch || domainMatch[0].includes("@")) {
+    return "";
+  }
+
+  return normalizeAuditUrl(domainMatch[0]);
+}
+
+function buildStateFromReport(report: GeoReport): GeoAuditState {
+  return {
+    url: report.url ?? "",
+    status: "complete",
+    geo_score: report.geo_score,
+    score_breakdown: report.score_breakdown,
+    crawler_matrix: report.crawler_matrix,
+    llms_txt_status: report.llms_txt_status,
+    llms_txt_recommended: report.llms_txt_recommended,
+    schema_found: report.schema_found,
+    schema_types: report.schema_types,
+    schema_recommendations: report.schema_recommendations,
+    meta_issues: report.meta_issues,
+    recommendations: report.recommendations,
+    report,
+    messages: [],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 export default function Home() {
   const [locale, setLocale] = useState<AppLocale>("en");
   const [showMethodology, setShowMethodology] = useState(false);
+  const [auditUrl, setAuditUrl] = useState("");
+  const [directAuditState, setDirectAuditState] = useState<GeoAuditState | null>(null);
+  const [directAuditError, setDirectAuditError] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const nextLocale = detectLocale();
@@ -115,19 +161,34 @@ export default function Home() {
   }, []);
 
   useLayoutEffect(() => {
-    const hideInspector = () => {
+    const enhanceThirdPartyAccessibility = () => {
       document
         .querySelectorAll<HTMLElement>('cpk-web-inspector, button[aria-label="Web Inspector"], .console-button')
         .forEach((element) => {
           element.remove();
         });
+
+      document
+        .querySelectorAll<HTMLTextAreaElement>('textarea[placeholder="Type a message..."], .copilotKitInput textarea')
+        .forEach((textarea) => {
+          if (!textarea.getAttribute("aria-label")) {
+            textarea.setAttribute("aria-label", "Chat message");
+          }
+        });
+
+      document
+        .querySelectorAll<SVGElement>(".copilotKitChat svg, .copilotKitWindow svg")
+        .forEach((icon) => {
+          icon.setAttribute("aria-hidden", "true");
+          icon.setAttribute("focusable", "false");
+        });
     };
 
-    hideInspector();
-    const intervalId = window.setInterval(hideInspector, 500);
+    enhanceThirdPartyAccessibility();
+    const intervalId = window.setInterval(enhanceThirdPartyAccessibility, 500);
 
     const observer = new MutationObserver(() => {
-      hideInspector();
+      enhanceThirdPartyAccessibility();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
@@ -149,8 +210,64 @@ export default function Home() {
     },
   });
 
+  const dashboardState = directAuditState ?? state;
+  const isDirectAuditRunning = directAuditState?.status === "analyzing";
+
+  const runAuditForUrl = async (value: string) => {
+    const normalizedUrl = normalizeAuditUrl(value);
+    if (!normalizedUrl) {
+      setDirectAuditError(locale === "it" ? "Inserisci un URL pubblico." : "Enter a public URL.");
+      return;
+    }
+
+    setDirectAuditError(null);
+    setDirectAuditState({
+      url: normalizedUrl,
+      status: "analyzing",
+      messages: [],
+    });
+
+    try {
+      const response = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: normalizedUrl }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        const message = payload?.detail ?? payload?.error ?? "Audit failed";
+        throw new Error(message);
+      }
+
+      setDirectAuditState(buildStateFromReport(payload as GeoReport));
+    } catch (error) {
+      setDirectAuditState({
+        url: normalizedUrl,
+        status: "error",
+        messages: [],
+      });
+      setDirectAuditError(error instanceof Error ? error.message : "Audit failed");
+    }
+  };
+
+  const runDirectAudit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await runAuditForUrl(auditUrl);
+  };
+
+  const runDashboardAuditFromChat = async (message: string) => {
+    const extractedUrl = extractAuditUrl(message);
+    if (!extractedUrl) {
+      return;
+    }
+
+    setAuditUrl(extractedUrl);
+    await runAuditForUrl(extractedUrl);
+  };
+
   useGeoAuditCopilot({
-    state,
+    state: dashboardState,
     locale,
     labels: {
       copilotReadable: t.copilotReadable,
@@ -162,126 +279,198 @@ export default function Home() {
     },
   });
 
-  const hasReport = Boolean(state.report);
+  const hasReport = Boolean(dashboardState.report);
 
   return (
-    <div className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
+    <>
+      <a href="#main-dashboard" className="skip-link">Skip to audit dashboard</a>
+      <motion.div
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden"
+      >
 
-      {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
-      <div className="min-w-0 flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:overflow-y-auto">
-        <div className="glass-panel rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7">
-          {/* Header */}
-          <header className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight shimmer-text">GEO Audit Agent</h1>
-              <p className="mt-1 max-w-2xl text-sm text-slate-300/80 sm:text-[15px]">
-                {t.subtitle}
-              </p>
-              <button
-                onClick={() => setShowMethodology(true)}
-                className="mt-2 inline-flex items-center gap-1.5 glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-cyan-300"
-                aria-label="How KPIs are calculated"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-                How KPIs are calculated
-              </button>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <a
-                  href={SOCIAL_LINKS.discord}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                  aria-label={t.socialDiscord}
-                  title={t.socialDiscord}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.32 4.37A19.79 19.79 0 0 0 15.4 3l-.24.49a18.3 18.3 0 0 1 4.43 2.13 14.32 14.32 0 0 0-3.71-1.18 18.37 18.37 0 0 0-3.88-.02A14.15 14.15 0 0 0 8.29 5.6a18.02 18.02 0 0 1 4.41-2.11L12.46 3a19.68 19.68 0 0 0-4.93 1.38C4.55 8.9 3.79 13.31 4.03 17.66a19.9 19.9 0 0 0 5.99 3.03l.49-.81a12.98 12.98 0 0 1-1.89-.9l.47-.35c3.64 1.71 7.57 1.71 11.17 0l.47.35c-.6.35-1.24.66-1.9.9l.49.81a19.8 19.8 0 0 0 6-3.03c.28-5.04-.48-9.45-3.5-13.29ZM9.68 15.02c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Zm4.64 0c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Z" /></svg>
-                    {t.socialDiscord}
-                  </span>
-                </a>
-                <a
-                  href={SOCIAL_LINKS.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                  aria-label={t.socialLinkedin}
-                  title={t.socialLinkedin}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A1.97 1.97 0 0 0 3.28 4.97c0 1.09.88 1.97 1.97 1.97s1.97-.88 1.97-1.97A1.97 1.97 0 0 0 5.25 3ZM20.72 12.72c0-2.84-1.52-4.16-3.55-4.16-1.63 0-2.36.9-2.77 1.53V8.5H11V20h3.4v-5.7c0-1.5.28-2.95 2.14-2.95 1.83 0 1.86 1.72 1.86 3.05V20H22v-7.28Z" /></svg>
-                    {t.socialLinkedin}
-                  </span>
-                </a>
-                <a
-                  href={SOCIAL_LINKS.bug}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-rose-100"
-                  aria-label={t.socialBug}
-                  title={t.socialBug}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M8 2h8l1 3h2v2h-2.1l-.9 10a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.1 7H5V5h2l1-3Zm2.2 3h3.6l-.34-1H10.5l-.3 1ZM9 21h6" /><path d="M12 9v6M9.5 11h5" /></svg>
-                    {t.socialBug}
-                  </span>
-                </a>
-              </div>
-            </div>
-            {hasReport && state.geo_score !== undefined && (
-              <div className="w-full self-stretch text-left glass-chip score-badge-hover glow-pulse rounded-xl px-3 py-2 sm:w-auto sm:self-start sm:text-right">
-                <p className="text-[11px] text-slate-300/80 uppercase tracking-wider">{t.scoreLabel}</p>
-                <p
-                  className="text-3xl font-bold"
-                  style={{
-                    color: state.geo_score >= 70 ? "#2dd4bf"
-                      : state.geo_score >= 45 ? "#fbbf24"
-                        : "#fb7185",
-                  }}
-                >
-                  {state.geo_score}<span className="text-lg text-slate-400">/100</span>
+        {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
+        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:overflow-y-auto" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
+          <motion.div layout className="glass-panel flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:flex-col">
+            {/* Header */}
+            <motion.header
+              layout
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight shimmer-text">GEO Audit Agent</h1>
+                <p className="mt-1 max-w-2xl text-sm text-slate-300/80 sm:text-[15px]">
+                  {t.subtitle}
                 </p>
+                <button
+                  onClick={() => setShowMethodology(true)}
+                  className="mt-2 inline-flex items-center gap-1.5 glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-cyan-300"
+                  aria-label="How KPIs are calculated"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+                  How KPIs are calculated
+                </button>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <a
+                    href={SOCIAL_LINKS.discord}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+                    aria-label={t.socialDiscord}
+                    title={t.socialDiscord}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.32 4.37A19.79 19.79 0 0 0 15.4 3l-.24.49a18.3 18.3 0 0 1 4.43 2.13 14.32 14.32 0 0 0-3.71-1.18 18.37 18.37 0 0 0-3.88-.02A14.15 14.15 0 0 0 8.29 5.6a18.02 18.02 0 0 1 4.41-2.11L12.46 3a19.68 19.68 0 0 0-4.93 1.38C4.55 8.9 3.79 13.31 4.03 17.66a19.9 19.9 0 0 0 5.99 3.03l.49-.81a12.98 12.98 0 0 1-1.89-.9l.47-.35c3.64 1.71 7.57 1.71 11.17 0l.47.35c-.6.35-1.24.66-1.9.9l.49.81a19.8 19.8 0 0 0 6-3.03c.28-5.04-.48-9.45-3.5-13.29ZM9.68 15.02c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Zm4.64 0c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Z" /></svg>
+                      {t.socialDiscord}
+                    </span>
+                  </a>
+                  <a
+                    href={SOCIAL_LINKS.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+                    aria-label={t.socialLinkedin}
+                    title={t.socialLinkedin}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A1.97 1.97 0 0 0 3.28 4.97c0 1.09.88 1.97 1.97 1.97s1.97-.88 1.97-1.97A1.97 1.97 0 0 0 5.25 3ZM20.72 12.72c0-2.84-1.52-4.16-3.55-4.16-1.63 0-2.36.9-2.77 1.53V8.5H11V20h3.4v-5.7c0-1.5.28-2.95 2.14-2.95 1.83 0 1.86 1.72 1.86 3.05V20H22v-7.28Z" /></svg>
+                      {t.socialLinkedin}
+                    </span>
+                  </a>
+                  <a
+                    href={SOCIAL_LINKS.bug}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-rose-100"
+                    aria-label={t.socialBug}
+                    title={t.socialBug}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M8 2h8l1 3h2v2h-2.1l-.9 10a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.1 7H5V5h2l1-3Zm2.2 3h3.6l-.34-1H10.5l-.3 1ZM9 21h6" /><path d="M12 9v6M9.5 11h5" /></svg>
+                      {t.socialBug}
+                    </span>
+                  </a>
+                </div>
               </div>
+              {hasReport && dashboardState.geo_score !== undefined && (
+                <motion.div
+                  layout
+                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full self-stretch text-left glass-chip score-badge-hover glow-pulse rounded-xl px-3 py-2 sm:w-auto sm:self-start sm:text-right"
+                >
+                  <p className="text-[11px] text-slate-300/80 uppercase tracking-wider">{t.scoreLabel}</p>
+                  <p
+                    className="text-3xl font-bold"
+                    style={{
+                      color: (dashboardState.geo_score ?? 0) >= 70 ? "#2dd4bf"
+                        : (dashboardState.geo_score ?? 0) >= 45 ? "#fbbf24"
+                          : "#fb7185",
+                    }}
+                  >
+                    {dashboardState.geo_score}<span className="text-lg text-slate-400">/100</span>
+                  </p>
+                </motion.div>
+              )}
+            </motion.header>
+
+            <motion.form
+              onSubmit={runDirectAudit}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10 mb-5 flex flex-col gap-2 rounded-xl border border-cyan-300/15 bg-cyan-300/5 p-3 sm:flex-row sm:items-center"
+              aria-describedby="audit-url-help"
+            >
+              <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
+              <input
+                id="audit-url"
+                type="text"
+                inputMode="url"
+                autoComplete="url"
+                value={auditUrl}
+                onChange={(event) => setAuditUrl(event.target.value)}
+                placeholder="https://www.example.com"
+                className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+                aria-label="Website URL"
+                aria-describedby="audit-url-help"
+                aria-invalid={Boolean(directAuditError)}
+              />
+              <button
+                type="submit"
+                disabled={isDirectAuditRunning}
+                className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
+              </button>
+              <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
+            </motion.form>
+            {directAuditError && (
+              <motion.div
+                initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="mb-5 rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-sm text-rose-100"
+                role="alert"
+              >
+                {directAuditError}
+              </motion.div>
             )}
-          </header>
 
-          <AuditDashboardContent
-            state={state}
-            locale={locale}
-            text={{
-              runningPrefix: t.runningPrefix,
-              noAuditTitle: t.noAuditTitle,
-              noAuditBody: t.noAuditBody,
-              samplePrompt1: t.samplePrompt1,
-              samplePrompt2: t.samplePrompt2,
-            }}
-            defaultLlmsTxt={DEFAULT_LLMS_TXT[locale]}
-          />
-        </div>
-      </div>
+            <div className="flex-1 min-h-0">
+              <AuditDashboardContent
+                state={dashboardState}
+                locale={locale}
+                text={{
+                  runningPrefix: t.runningPrefix,
+                  noAuditTitle: t.noAuditTitle,
+                  noAuditBody: t.noAuditBody,
+                  samplePrompt1: t.samplePrompt1,
+                  samplePrompt2: t.samplePrompt2,
+                }}
+                defaultLlmsTxt={DEFAULT_LLMS_TXT[locale]}
+              />
+            </div>
+          </motion.div>
+        </motion.main>
 
-      {/* ── Methodology Modal ────────────────────────────────────────────── */}
-      <MethodologyModal
-        open={showMethodology}
-        onClose={() => setShowMethodology(false)}
-        locale={locale}
-      />
+        {/* ── Methodology Modal ────────────────────────────────────────────── */}
+        <MethodologyModal
+          open={showMethodology}
+          onClose={() => setShowMethodology(false)}
+          locale={locale}
+        />
 
-      {/* ── Right: CopilotKit Chat ───────────────────────────────────────── */}
-      <div className="w-full shrink-0 p-4 pt-0 sm:px-5 md:px-7 md:pb-7 lg:w-[26rem] lg:p-5 xl:w-[28rem]">
-        <div className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">
-          <div className="mx-3 mt-3 mb-2 rounded-lg border border-amber-300/30 bg-amber-200/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
-            {t.aiActLabel}
-          </div>
-          <CopilotChat
-            labels={{
-              title: t.chatTitle,
-              initial: t.chatInitial,
-            }}
-            className="h-full min-h-0"
-          />
-        </div>
-      </div>
-    </div>
+        {/* ── Right: CopilotKit Chat ───────────────────────────────────────── */}
+        <motion.aside
+          initial={prefersReducedMotion ? false : { opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full shrink-0 p-4 pt-0 sm:px-5 md:px-7 md:pb-7 lg:w-[26rem] lg:p-5 xl:w-[28rem]"
+          aria-label="GEO audit chat assistant"
+        >
+          <motion.div layout className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">
+            <div className="mx-3 mt-3 mb-2 rounded-lg border border-amber-300/30 bg-amber-200/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
+              {t.aiActLabel}
+            </div>
+            <CopilotChat
+              onSubmitMessage={runDashboardAuditFromChat}
+              labels={{
+                title: t.chatTitle,
+                initial: t.chatInitial,
+              }}
+              className="h-full min-h-0"
+            />
+          </motion.div>
+        </motion.aside>
+      </motion.div>
+    </>
   );
 }
 

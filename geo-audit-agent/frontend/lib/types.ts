@@ -87,6 +87,5 @@ export type GeoAuditState = {
   meta_issues?: MetaIssue[];
   recommendations?: Recommendation[];
   report?: GeoReport;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  messages: any[];
+  messages: unknown[];
 };

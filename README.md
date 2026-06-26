@@ -10,7 +10,8 @@ The solution combines:
 - a FastAPI backend with LangGraph orchestration,
 - deterministic GEO inspection logic implemented in Python,
 - a synchronized dashboard backed by shared agent state,
-- exportable Markdown and PDF reports.
+- exportable Markdown and PDF reports,
+- an explicit WCAG 2.2 AA accessibility target for user-facing surfaces.
 
 The goal of the project is to evaluate how well a website is prepared for AI-assisted discovery and answer engines such as ChatGPT Search, Perplexity, Google AI Overviews, Gemini, and similar systems.
 
@@ -34,13 +35,14 @@ That means:
 - AI platform readiness evaluation
 - Markdown and PDF report export
 - Responsive UI, browser icon support, and configurable public links
+- Accessibility target based on WCAG 2.2 AA for dashboard, chat, forms, dialogs, and report views
 - Basic server-side guardrails for out-of-scope or unsafe chat requests
 
 ## Technology Stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | Next.js 14, React 18, CopilotKit React |
+| Frontend | Next.js 15, React 18, CopilotKit React |
 | Backend | FastAPI, CopilotKit SDK |
 | Agent Orchestration | LangGraph, LangChain |
 | LLM Providers | OpenAI, OpenRouter, Azure AI Foundry / Azure OpenAI-compatible, Vertex AI |
@@ -142,6 +144,7 @@ geo-audit-app/
 │   │   ├── lib/
 │   │   └── public/
 │   ├── docs/
+│   │   ├── accessibility-target-en.md
 │   │   ├── app-analysis-en.md
 │   │   ├── solution-architecture-en.md
 │   │   ├── technical-architecture-en.md

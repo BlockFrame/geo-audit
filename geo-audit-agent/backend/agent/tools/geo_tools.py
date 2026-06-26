@@ -3,6 +3,7 @@ import ipaddress
 import json
 import re
 import socket
+from contextvars import ContextVar
 from datetime import date
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
@@ -36,8 +37,15 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; GeoAuditBot/1.0; +https://git
 ALLOWED_SCHEMES = {"http", "https"}
 BLOCKED_HOST_LABELS = {"localhost"}
 MAX_REDIRECTS = 5
+MAX_FETCH_BYTES = 2 * 1024 * 1024
 PUBLIC_URL_ERROR = "Target URL is not allowed. Use a public http(s) website URL."
 FETCH_ERROR = "Unable to fetch the requested page."
+FETCH_TOO_LARGE_ERROR = "Fetched content is too large."
+UNSUPPORTED_CONTENT_TYPE_ERROR = "Fetched content type is not supported."
+_REQUEST_CACHE: ContextVar[dict[tuple[str, int], tuple[int, str, dict]] | None] = ContextVar(
+    "geo_audit_request_cache",
+    default=None,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -116,25 +124,83 @@ def _safe_request(url: str, timeout: int = 10) -> httpx.Response:
     raise ValueError("Too many redirects")
 
 
+def _is_supported_content_type(headers: dict) -> bool:
+    content_type = headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if not content_type:
+        return True
+
+    return content_type.startswith("text/") or content_type in {
+        "application/json",
+        "application/ld+json",
+        "application/xml",
+        "application/xhtml+xml",
+        "application/rss+xml",
+        "application/atom+xml",
+    }
+
+
+def _read_limited_text(response: httpx.Response) -> str:
+    content_length = response.headers.get("content-length")
+    if content_length and content_length.isdigit() and int(content_length) > MAX_FETCH_BYTES:
+        raise ValueError(FETCH_TOO_LARGE_ERROR)
+
+    chunks: list[bytes] = []
+    total_bytes = 0
+    for chunk in response.iter_bytes():
+        total_bytes += len(chunk)
+        if total_bytes > MAX_FETCH_BYTES:
+            raise ValueError(FETCH_TOO_LARGE_ERROR)
+        chunks.append(chunk)
+
+    return b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
+
+
+def _safe_fetch_full(url: str, timeout: int = 10) -> tuple[int, str, dict]:
+    current_url = normalize_public_url(url)
+
+    with httpx.Client(headers=HEADERS, timeout=timeout, follow_redirects=False) as client:
+        for _ in range(MAX_REDIRECTS + 1):
+            with client.stream("GET", current_url) as response:
+                headers = dict(response.headers)
+
+                if response.is_redirect:
+                    location = response.headers.get("location")
+                    if not location:
+                        return response.status_code, "", headers
+                    current_url = normalize_public_url(urljoin(current_url, location))
+                    continue
+
+                if not _is_supported_content_type(headers):
+                    raise ValueError(UNSUPPORTED_CONTENT_TYPE_ERROR)
+
+                return response.status_code, _read_limited_text(response), headers
+
+    raise ValueError("Too many redirects")
+
+
 def _get(url: str, timeout: int = 10) -> tuple[int, str]:
-    try:
-        resp = _safe_request(url, timeout=timeout)
-        return resp.status_code, resp.text
-    except ValueError as exc:
-        return 0, str(exc)
-    except Exception:
-        return 0, FETCH_ERROR
+    status_code, content, _ = _get_full(url, timeout=timeout)
+    return status_code, content
 
 
 def _get_full(url: str, timeout: int = 10) -> tuple[int, str, dict]:
     """Like _get but also returns response headers for security header checks."""
+    cache = _REQUEST_CACHE.get()
+    cache_key = (url, timeout)
+    if cache is not None and cache_key in cache:
+        return cache[cache_key]
+
     try:
-        resp = _safe_request(url, timeout=timeout)
-        return resp.status_code, resp.text, dict(resp.headers)
+        result = _safe_fetch_full(url, timeout=timeout)
     except ValueError as exc:
-        return 0, str(exc), {}
+        result = (0, str(exc), {})
     except Exception:
-        return 0, FETCH_ERROR, {}
+        result = (0, FETCH_ERROR, {})
+
+    if cache is not None:
+        cache[cache_key] = result
+
+    return result
 
 
 def _domain_label(url: str) -> str:
@@ -897,17 +963,21 @@ def generate_llms_txt(url: str) -> str:
 @tool
 def compile_geo_report(url: str) -> str:
     """Compile a complete GEO audit report by running all checks and computing the final weighted score."""
-    business    = _business_type_impl(url)
-    robots      = _robots_impl(url)
-    llms        = _llms_impl(url)
-    llms_tpl    = _generate_llms_txt_impl(url)
-    schema      = _schema_impl(url)
-    meta        = _meta_impl(url)
-    technical   = _technical_impl(url)
-    content     = _content_quality_impl(url)
-    brand       = _brand_mentions_impl(url)
-    citability  = _citability_impl(url)
-    platform    = _platform_readiness_impl(url)
+    cache_token = _REQUEST_CACHE.set({})
+    try:
+        business    = _business_type_impl(url)
+        robots      = _robots_impl(url)
+        llms        = _llms_impl(url)
+        llms_tpl    = _generate_llms_txt_impl(url)
+        schema      = _schema_impl(url)
+        meta        = _meta_impl(url)
+        technical   = _technical_impl(url)
+        content     = _content_quality_impl(url)
+        brand       = _brand_mentions_impl(url)
+        citability  = _citability_impl(url)
+        platform    = _platform_readiness_impl(url)
+    finally:
+        _REQUEST_CACHE.reset(cache_token)
 
     # --- Score components ---
     configured_ai = robots.get("ai_crawlers_explicitly_configured", 0)

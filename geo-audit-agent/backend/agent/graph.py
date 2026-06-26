@@ -50,6 +50,10 @@ tool_node = ToolNode(tools)
 MAX_GRAPH_MESSAGES = 40
 ALLOWED_TOOL_NAME = "compile_geo_report"
 URL_PATTERN = re.compile(r"https?://[^\s\"'\]\}]+", re.IGNORECASE)
+DOMAIN_PATTERN = re.compile(
+    r"\b(?:https?://)?(?:www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s\"'\]\}<]*)?",
+    re.IGNORECASE,
+)
 BLOCKED_CHAT_PATTERNS = [
     re.compile(r"\b(system prompt|developer message|hidden instructions?|internal prompt|tool schema|chain of thought)\b", re.IGNORECASE),
     re.compile(r"\b(ignore|bypass|override)\b.{0,40}\b(instruction|guardrail|policy|prompt)\b", re.IGNORECASE),
@@ -77,6 +81,18 @@ def _message_text(content) -> str:
 
 
 def _detect_language(state: GeoAuditState) -> str:
+    latest_text = _latest_user_text(state).lower()
+    if not latest_text:
+        return "en"
+
+    italian_markers = [
+        r"\b(analizza|analizzare|audit|sito|migliorie|criticita|priorita|consigli|verifica|prosegui)\b",
+        r"\b(come|cosa|perche|perche'|perché|quando|quali|quanto|dove)\b",
+        r"\b(il|lo|la|gli|le|un|una|del|della|dei|delle|nel|nella|con|per)\b",
+    ]
+    if sum(1 for pattern in italian_markers if re.search(pattern, latest_text, re.IGNORECASE)) >= 2:
+        return "it"
+
     return "en"
 
 
@@ -104,7 +120,41 @@ def _latest_user_text(state: GeoAuditState) -> str:
     return ""
 
 
+def _normalize_audit_candidate(candidate: str) -> str | None:
+    cleaned = candidate.strip().strip(".,;:!?)]}")
+    if not cleaned or "@" in cleaned:
+        return None
+
+    if not re.match(r"^https?://", cleaned, re.IGNORECASE):
+        cleaned = f"https://{cleaned}"
+
+    is_valid, _ = validate_audit_url(cleaned)
+    return cleaned if is_valid else None
+
+
+def _extract_audit_url_from_text(text: str) -> str | None:
+    for match in URL_PATTERN.findall(text):
+        normalized = _normalize_audit_candidate(match)
+        if normalized:
+            return normalized
+
+    for match in DOMAIN_PATTERN.findall(text):
+        normalized = _normalize_audit_candidate(match)
+        if normalized:
+            return normalized
+
+    return None
+
+
 def _guardrail_message(language: str, kind: str) -> str:
+    if language == "it":
+        if kind == "scope":
+            return (
+                "Posso aiutarti solo con audit GEO per siti web pubblici. "
+                "Non posso aiutare con exploit, bypass, prompt nascosti, segreti o credenziali."
+            )
+        return "Posso analizzare solo URL pubblici http(s). Non usare localhost, indirizzi privati o endpoint interni."
+
     if kind == "scope":
         return (
             "I can only help with GEO audits for public websites. "
@@ -266,6 +316,20 @@ def call_model(state: GeoAuditState):
     guardrail_response = _chat_guardrail_response(state, language)
     if guardrail_response is not None:
         return {"messages": [guardrail_response], "status": "error"}
+
+    audit_url = _extract_audit_url_from_text(_latest_user_text(state))
+    if audit_url:
+        return {
+            "messages": [AIMessage(content="", tool_calls=[{
+                "id": f"synthetic_{uuid4().hex}",
+                "name": ALLOWED_TOOL_NAME,
+                "args": {"url": audit_url},
+                "type": "tool_call",
+            }])],
+            "status": "analyzing",
+            "url": audit_url,
+        }
+
     try:
         response = _normalize_textual_tool_calls(model.invoke([system] + messages))
         response = _enforce_tool_guardrails(response, language)

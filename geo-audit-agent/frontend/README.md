@@ -36,6 +36,25 @@ npm start
   - Audience-targeted content: Executive, Marketing, Technical
   - Customizable brand templates
 - 📈 **Web Analytics** - Vercel Analytics + Speed Insights for monitoring
+- **Accessibility Target** - WCAG 2.2 AA target for dashboard, chat, forms, dialogs, and report views
+
+## Accessibility Target
+
+The frontend targets **WCAG 2.2 Level AA** for user-facing surfaces.
+
+Current safeguards include:
+
+- semantic dashboard and chat landmarks,
+- skip link support,
+- visible keyboard focus,
+- accessible labels for the audit URL field and chat input,
+- live status announcements for audit progress,
+- alert semantics for audit errors,
+- accessible dialog labeling and focus restoration,
+- reduced-motion support,
+- contrast overrides for chat links and supporting text.
+
+See [Accessibility Target](../docs/accessibility-target-en.md) for the release checklist and future automated testing target.
 
 ## Environment Variables
 
@@ -113,13 +132,14 @@ npm run dev      # Start development server
 npm run build    # Build for production
 npm start        # Start production server
 npm run lint     # Run ESLint
+npm run test:a11y # Run Playwright + axe-core accessibility checks
 ```
 
 ## Technology Stack
 
 | Technology | Purpose |
 |-----------|---------|
-| **Next.js 14** | React framework with SSR/SSG |
+| **Next.js 15** | React framework with SSR/SSG |
 | **React 18** | UI component library |
 | **TypeScript** | Type safety |
 | **Tailwind CSS** | Styling |
