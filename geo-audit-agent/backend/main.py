@@ -7,8 +7,7 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from copilotkit import CopilotKitSDK, LangGraphAGUIAgent
-from copilotkit.langgraph_agent import LangGraphAgent as _CKLangGraphAgent
+from copilotkit import CopilotKitSDK, LangGraphAGUIAgent, LangGraphAgent as _CKLangGraphAgent
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
 from ag_ui_langgraph.endpoint import add_langgraph_fastapi_endpoint
 

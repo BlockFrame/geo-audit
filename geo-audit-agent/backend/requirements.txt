@@ -1,6 +1,6 @@
 fastapi>=0.110.0
 uvicorn[standard]>=0.27.0
-copilotkit>=0.1.75
+copilotkit==0.1.87
 langchain>=0.2.0
 langchain-openai>=0.1.0
 langchain-google-vertexai>=2.0.0

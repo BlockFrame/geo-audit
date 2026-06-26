@@ -7,7 +7,7 @@ import ActionPlanCards from "@/components/ActionPlanCards";
 import BrandPresencePanel from "@/components/BrandPresencePanel";
 import CitabilityPanel from "@/components/CitabilityPanel";
 import CrawlerMatrix from "@/components/CrawlerMatrix";
-import GeoParticleGlobe from "@/components/GeoParticleGlobe";
+import ImmersiveMotionScene from "@/components/ImmersiveMotionScene";
 import LlmsTxtPreview from "@/components/LlmsTxtPreview";
 import SchemaReport from "@/components/SchemaReport";
 import TechnicalChecksPanel from "@/components/TechnicalChecksPanel";
@@ -174,28 +174,12 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
             animate={{ opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
             transition={fadeUpTransition}
-            className="flex min-h-[20rem] items-center justify-center py-2 lg:h-full"
+            className="relative flex min-h-[26rem] flex-col gap-4 py-2 lg:min-h-[38rem] lg:h-full"
             aria-live="polite"
           >
-            <GeoParticleGlobe free className="h-[22rem] w-full sm:h-[28rem] xl:h-[34rem]" />
-            <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence initial={false} mode="wait">
-        {!isRunning && !hasReport && (
-          <motion.div
-            key="empty"
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
-            transition={fadeUpTransition}
-            className="flex flex-col py-2 lg:flex-1"
-            aria-live="polite"
-          >
-            <GeoParticleGlobe free className="h-[22rem] w-full sm:h-[28rem] xl:h-[34rem]" />
+            <ImmersiveMotionScene free className="h-[22rem] w-full sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" />
             <motion.div
-              className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4"
+              className="grid grid-cols-2 gap-3 xl:grid-cols-4"
               initial={prefersReducedMotion ? false : "hidden"}
               animate="visible"
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
@@ -279,6 +263,15 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
                 </motion.div>
               ))}
             </motion.div>
+            <div className="mt-1 rounded-2xl border border-cyan-300/12 bg-slate-950/20 px-4 py-3 text-sm text-slate-300/80 backdrop-blur-xl">
+              <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-cyan-200/80">{text.noAuditTitle}</p>
+              <p className="mt-1 max-w-3xl leading-relaxed">{text.noAuditBody}</p>
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono uppercase tracking-[0.22em] text-slate-400">
+                <span className="rounded-full border border-cyan-300/15 bg-cyan-300/6 px-2.5 py-1">WebGL-inspired</span>
+                <span className="rounded-full border border-indigo-300/15 bg-indigo-300/6 px-2.5 py-1">Layered depth</span>
+                <span className="rounded-full border border-teal-300/15 bg-teal-300/6 px-2.5 py-1">Interactive field</span>
+              </div>
+            </div>
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
           </motion.div>
         )}
