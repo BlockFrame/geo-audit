@@ -13,12 +13,6 @@ import { GeoAuditState, GeoReport } from "@/lib/types";
 
 type AppLocale = "it" | "en";
 
-const SOCIAL_LINKS = {
-  discord: process.env.NEXT_PUBLIC_DISCORD_URL ?? "https://discord.com",
-  linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "https://www.linkedin.com/in/rossi-stefano/",
-  bug: process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL ?? "https://github.com/geo-audit/issues/new",
-};
-
 const UI_TEXT: Record<AppLocale, {
   copilotReadable: string;
   loadingScore: string;
@@ -26,6 +20,16 @@ const UI_TEXT: Record<AppLocale, {
   loadingPlan: string;
   loadingLlms: string;
   loadingSchema: string;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroBody: string;
+  heroStatus: string;
+  heroPanelTitle: string;
+  heroPanelBody: string;
+  heroSignalLabel: string;
+  heroSignalValue: string;
+  heroOrbitLabel: string;
+  heroOrbitValue: string;
   subtitle: string;
   scoreLabel: string;
   runningPrefix: string;
@@ -48,6 +52,16 @@ const UI_TEXT: Record<AppLocale, {
     loadingPlan: "Building action plan...",
     loadingLlms: "Generating llms.txt...",
     loadingSchema: "Checking schema markup...",
+    heroEyebrow: "AI visibility command center",
+    heroTitle: "GEO Audit Agent",
+    heroBody: "Analizza subito come il tuo sito viene letto da motori generativi, crawler AI e layer semantici: un audit pensato per capire visibilita, citabilita e prontezza tecnica in pochi secondi.",
+    heroStatus: "Backend unreachable. Make sure the backend server is running.",
+    heroPanelTitle: "What it does",
+    heroPanelBody: "Controlla accesso crawler, llms.txt, segnali semantici, dati strutturati e citabilita in un flusso unico.",
+    heroSignalLabel: "Mode",
+    heroSignalValue: "Generative search audit",
+    heroOrbitLabel: "Focus",
+    heroOrbitValue: "Visibility · Citability · Technical readiness",
     subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
@@ -74,6 +88,16 @@ const UI_TEXT: Record<AppLocale, {
     loadingPlan: "Building action plan...",
     loadingLlms: "Generating llms.txt...",
     loadingSchema: "Checking schema markup...",
+    heroEyebrow: "AI visibility command center",
+    heroTitle: "GEO Audit Agent",
+    heroBody: "Instantly inspect how your site is interpreted by generative engines, AI crawlers, and semantic layers, with an audit focused on visibility, citability, and technical readiness.",
+    heroStatus: "Backend unreachable. Make sure the backend server is running.",
+    heroPanelTitle: "What it does",
+    heroPanelBody: "Checks crawler access, llms.txt coverage, semantic signals, structured data, and citability in one continuous audit flow.",
+    heroSignalLabel: "Mode",
+    heroSignalValue: "Generative search audit",
+    heroOrbitLabel: "Focus",
+    heroOrbitValue: "Visibility · Citability · Technical readiness",
     subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
@@ -286,6 +310,7 @@ export default function Home() {
   });
 
   const hasReport = Boolean(dashboardState.report);
+  const showHeroLanding = !hasReport && !isDirectAuditRunning;
 
   return (
     <>
@@ -306,63 +331,67 @@ export default function Home() {
               initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between"
+              className={`mb-6 flex flex-col items-start gap-4 ${showHeroLanding ? "xl:grid xl:grid-cols-[minmax(0,1.4fr)_20rem] xl:items-end" : "sm:flex-row sm:items-start sm:justify-between"}`}
             >
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl md:text-3xl font-semibold tracking-tight shimmer-text">GEO Audit Agent</h1>
-                <p className="mt-1 max-w-2xl text-sm text-slate-300/80 sm:text-[15px]">
-                  {t.subtitle}
-                </p>
-                <button
-                  onClick={() => setShowMethodology(true)}
-                  className="mt-2 inline-flex items-center gap-1.5 glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-cyan-300"
-                  aria-label="How KPIs are calculated"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-                  How KPIs are calculated
-                </button>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <a
-                    href={SOCIAL_LINKS.discord}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                    aria-label={t.socialDiscord}
-                    title={t.socialDiscord}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.32 4.37A19.79 19.79 0 0 0 15.4 3l-.24.49a18.3 18.3 0 0 1 4.43 2.13 14.32 14.32 0 0 0-3.71-1.18 18.37 18.37 0 0 0-3.88-.02A14.15 14.15 0 0 0 8.29 5.6a18.02 18.02 0 0 1 4.41-2.11L12.46 3a19.68 19.68 0 0 0-4.93 1.38C4.55 8.9 3.79 13.31 4.03 17.66a19.9 19.9 0 0 0 5.99 3.03l.49-.81a12.98 12.98 0 0 1-1.89-.9l.47-.35c3.64 1.71 7.57 1.71 11.17 0l.47.35c-.6.35-1.24.66-1.9.9l.49.81a19.8 19.8 0 0 0 6-3.03c.28-5.04-.48-9.45-3.5-13.29ZM9.68 15.02c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Zm4.64 0c-1.09 0-1.98-.99-1.98-2.22s.87-2.23 1.98-2.23c1.12 0 2 1 1.98 2.23 0 1.23-.88 2.22-1.98 2.22Z" /></svg>
-                      {t.socialDiscord}
-                    </span>
-                  </a>
-                  <a
-                    href={SOCIAL_LINKS.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                    aria-label={t.socialLinkedin}
-                    title={t.socialLinkedin}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A1.97 1.97 0 0 0 3.28 4.97c0 1.09.88 1.97 1.97 1.97s1.97-.88 1.97-1.97A1.97 1.97 0 0 0 5.25 3ZM20.72 12.72c0-2.84-1.52-4.16-3.55-4.16-1.63 0-2.36.9-2.77 1.53V8.5H11V20h3.4v-5.7c0-1.5.28-2.95 2.14-2.95 1.83 0 1.86 1.72 1.86 3.05V20H22v-7.28Z" /></svg>
-                      {t.socialLinkedin}
-                    </span>
-                  </a>
-                  <a
-                    href={SOCIAL_LINKS.bug}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-rose-100"
-                    aria-label={t.socialBug}
-                    title={t.socialBug}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M8 2h8l1 3h2v2h-2.1l-.9 10a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.1 7H5V5h2l1-3Zm2.2 3h3.6l-.34-1H10.5l-.3 1ZM9 21h6" /><path d="M12 9v6M9.5 11h5" /></svg>
-                      {t.socialBug}
-                    </span>
-                  </a>
-                </div>
+                {showHeroLanding ? (
+                  <>
+                    <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.36em] text-cyan-200/75">{t.heroEyebrow}</p>
+                    <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl xl:text-[4.5rem] xl:leading-[0.94]">{t.heroTitle}</h1>
+                    <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300/82 sm:text-lg">{t.heroBody}</p>
+                    <motion.div
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                      animate={prefersReducedMotion ? { opacity: 1 } : { opacity: [0.72, 1, 0.8], y: 0 }}
+                      transition={prefersReducedMotion ? { duration: 0 } : { duration: 2.8, repeat: Infinity, repeatType: "mirror" }}
+                      className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/20 bg-slate-950/55 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.24em] text-cyan-200/85"
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
+                      <span className="truncate">{t.heroStatus}</span>
+                    </motion.div>
+                    <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-mono uppercase tracking-[0.22em] text-slate-400">
+                      <span className="rounded-full border border-cyan-300/15 bg-cyan-300/6 px-2.5 py-1">AI crawler readiness</span>
+                      <span className="rounded-full border border-indigo-300/15 bg-indigo-300/6 px-2.5 py-1">Schema and llms.txt</span>
+                      <span className="rounded-full border border-teal-300/15 bg-teal-300/6 px-2.5 py-1">Citability diagnostics</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight shimmer-text">GEO Audit Agent</h1>
+                    <p className="mt-1 max-w-2xl text-sm text-slate-300/80 sm:text-[15px]">
+                      {t.subtitle}
+                    </p>
+                    <button
+                      onClick={() => setShowMethodology(true)}
+                      className="mt-2 inline-flex items-center gap-1.5 glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-cyan-300"
+                      aria-label="How KPIs are calculated"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+                      How KPIs are calculated
+                    </button>
+                  </>
+                )}
               </div>
+              {showHeroLanding && (
+                <motion.div
+                  initial={prefersReducedMotion ? false : { opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.4, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full rounded-[1.6rem] border border-white/8 bg-white/[0.03] p-4 backdrop-blur-2xl xl:max-w-[20rem]"
+                >
+                  <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-cyan-200/80">{t.heroPanelTitle}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300/76">{t.heroPanelBody}</p>
+                  <div className="mt-4 space-y-3 rounded-2xl border border-white/6 bg-slate-950/34 p-3">
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-slate-500">{t.heroSignalLabel}</p>
+                      <p className="mt-1 text-sm text-slate-100">{t.heroSignalValue}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-slate-500">{t.heroOrbitLabel}</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-300/82">{t.heroOrbitValue}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
               {hasReport && dashboardState.geo_score !== undefined && (
                 <motion.div
                   layout
@@ -391,7 +420,7 @@ export default function Home() {
               initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 mb-5 flex flex-col gap-2 rounded-xl border border-cyan-300/15 bg-cyan-300/5 p-3 sm:flex-row sm:items-center"
+              className={`relative z-10 mb-5 flex flex-col gap-2 rounded-xl border border-cyan-300/15 p-3 sm:flex-row sm:items-center ${showHeroLanding ? "bg-slate-950/45 backdrop-blur-xl" : "bg-cyan-300/5"}`}
               aria-describedby="audit-url-help"
             >
               <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
@@ -462,8 +491,12 @@ export default function Home() {
           aria-label="GEO audit chat assistant"
         >
           <motion.div layout className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">
-            <div className="mx-3 mt-3 mb-2 rounded-lg border border-amber-300/30 bg-amber-200/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100">
-              {t.aiActLabel}
+            <div className="mx-3 mt-3 mb-2 rounded-2xl border border-white/6 bg-white/[0.03] px-3 py-3 backdrop-blur-xl">
+              <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-cyan-200/80">Conversation console</p>
+              <p className="mt-1 text-sm leading-6 text-slate-300/78">Paste a full URL or ask for a GEO audit to start the analysis flow from chat.</p>
+              <div className="mt-2 rounded-xl border border-amber-300/18 bg-amber-200/8 px-2.5 py-2 text-[11px] leading-relaxed text-amber-100/88">
+                {t.aiActLabel}
+              </div>
             </div>
             <CopilotChat
               onSubmitMessage={runDashboardAuditFromChat}

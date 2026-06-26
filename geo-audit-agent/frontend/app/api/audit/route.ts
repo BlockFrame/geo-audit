@@ -3,7 +3,32 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const BACKEND_AUDIT_URL = process.env.BACKEND_AUDIT_URL ?? "http://127.0.0.1:8000/audit";
+const DEFAULT_BACKEND_BASE_URL = "http://127.0.0.1:8000";
+
+function trimTrailingSlash(value: string) {
+    return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function resolveBackendBaseUrl() {
+    const explicitAuditUrl = process.env.BACKEND_AUDIT_URL?.trim();
+    if (explicitAuditUrl) {
+        return trimTrailingSlash(explicitAuditUrl);
+    }
+
+    const copilotKitUrl = process.env.BACKEND_URL?.trim();
+    if (copilotKitUrl) {
+        return `${trimTrailingSlash(copilotKitUrl).replace(/\/copilotkit$/, "")}/audit`;
+    }
+
+    const aguiUrl = process.env.BACKEND_AGUI_URL?.trim();
+    if (aguiUrl) {
+        return `${trimTrailingSlash(aguiUrl).replace(/\/agui\/default$/, "")}/audit`;
+    }
+
+    return `${DEFAULT_BACKEND_BASE_URL}/audit`;
+}
+
+const BACKEND_AUDIT_URL = resolveBackendBaseUrl();
 const MAX_AUDIT_REQUEST_BYTES = 8 * 1024;
 
 export async function POST(req: NextRequest) {

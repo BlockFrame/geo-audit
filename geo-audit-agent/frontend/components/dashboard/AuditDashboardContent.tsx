@@ -178,98 +178,18 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
             aria-live="polite"
           >
             <ImmersiveMotionScene free className="h-[22rem] w-full sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" />
-            <motion.div
-              className="grid grid-cols-2 gap-3 xl:grid-cols-4"
-              initial={prefersReducedMotion ? false : "hidden"}
-              animate="visible"
-              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
-            >
-              {[
-                {
-                  label: "AI CRAWLERS",
-                  value: "12",
-                  unit: "agents",
-                  status: "SCANNING",
-                  statusColor: "text-cyan-300",
-                  dotColor: "bg-cyan-400",
-                  icon: "⬡",
-                  sub: "GPT · Gemini · Perplexity · Claude",
-                  floatY: [0, -7, 0],
-                },
-                {
-                  label: "CITABILITY",
-                  value: "--",
-                  unit: "/ 100",
-                  status: "PENDING",
-                  statusColor: "text-indigo-300",
-                  dotColor: "bg-indigo-400",
-                  icon: "◎",
-                  sub: "Run audit to compute",
-                  floatY: [0, -5, 0],
-                },
-                {
-                  label: "SCHEMA",
-                  value: "0",
-                  unit: "types",
-                  status: "READY",
-                  statusColor: "text-teal-300",
-                  dotColor: "bg-teal-400",
-                  icon: "◈",
-                  sub: "JSON-LD · OpenGraph · Meta",
-                  floatY: [0, -9, 0],
-                },
-                {
-                  label: "SYS STATUS",
-                  value: "OK",
-                  unit: "",
-                  status: "NOMINAL",
-                  statusColor: "text-green-300",
-                  dotColor: "bg-green-400",
-                  icon: "◆",
-                  sub: "Engine · API · LangGraph",
-                  floatY: [0, -6, 0],
-                },
-              ].map((card, idx) => (
-                <motion.div
-                  key={idx}
-                  variants={
-                    prefersReducedMotion
-                      ? {}
-                      : { hidden: { opacity: 0, y: 22 }, visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } } }
-                  }
-                  animate={prefersReducedMotion ? undefined : { y: card.floatY }}
-                  transition={prefersReducedMotion ? undefined : { duration: 3.6 + idx * 0.4, repeat: Infinity, ease: "easeInOut" }}
-                  whileHover={prefersReducedMotion ? undefined : { scale: 1.04, transition: { duration: 0.22 } }}
-                  className="holo-card rounded-2xl p-3 cursor-default select-none"
-                >
-                  <div className="relative z-10">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-mono tracking-[0.22em] text-slate-400">{card.label}</span>
-                      <span className="text-base leading-none">{card.icon}</span>
-                    </div>
-                    <p className="text-2xl font-bold tracking-tight text-slate-50">
-                      {card.value}
-                      {card.unit && <span className="ml-1 text-xs text-slate-400 font-normal">{card.unit}</span>}
-                    </p>
-                    <p className="mt-1 text-[10px] text-slate-400 truncate">{card.sub}</p>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <span
-                        className={`inline-block h-1.5 w-1.5 rounded-full ${card.dotColor}`}
-                        style={{ animation: "pulse-dot 2s ease-in-out infinite" }}
-                      />
-                      <span className={`text-[10px] font-mono tracking-widest ${card.statusColor}`}>{card.status}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-            <div className="mt-1 rounded-2xl border border-cyan-300/12 bg-slate-950/20 px-4 py-3 text-sm text-slate-300/80 backdrop-blur-xl">
+            <div className="mt-1 rounded-2xl border border-cyan-300/12 bg-slate-950/20 px-4 py-4 text-sm text-slate-300/80 backdrop-blur-xl">
               <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-cyan-200/80">{text.noAuditTitle}</p>
               <p className="mt-1 max-w-3xl leading-relaxed">{text.noAuditBody}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-mono uppercase tracking-[0.22em] text-slate-400">
-                <span className="rounded-full border border-cyan-300/15 bg-cyan-300/6 px-2.5 py-1">WebGL-inspired</span>
-                <span className="rounded-full border border-indigo-300/15 bg-indigo-300/6 px-2.5 py-1">Layered depth</span>
-                <span className="rounded-full border border-teal-300/15 bg-teal-300/6 px-2.5 py-1">Interactive field</span>
+              <div className="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/6 bg-white/3 px-3 py-2">
+                  <p className="font-mono uppercase tracking-[0.18em] text-cyan-200/80">Prompt</p>
+                  <p className="mt-1 leading-relaxed text-slate-300/76">{text.samplePrompt1}</p>
+                </div>
+                <div className="rounded-xl border border-white/6 bg-white/3 px-3 py-2">
+                  <p className="font-mono uppercase tracking-[0.18em] text-cyan-200/80">Quick start</p>
+                  <p className="mt-1 leading-relaxed text-slate-300/76">{text.samplePrompt2}</p>
+                </div>
               </div>
             </div>
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
