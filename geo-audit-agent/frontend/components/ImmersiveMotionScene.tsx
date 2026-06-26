@@ -8,6 +8,17 @@ type ImmersiveMotionSceneProps = {
     className?: string;
 };
 
+type Particle = {
+    x: number;
+    y: number;
+    z: number;
+    vx: number;
+    vy: number;
+    vz: number;
+    phase: number;
+    hue: number;
+};
+
 function clamp(value: number, min: number, max: number) {
     return Math.max(min, Math.min(max, value));
 }
@@ -21,17 +32,6 @@ function mulberry32(seed: number) {
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
 }
-
-type Particle = {
-    x: number;
-    y: number;
-    z: number;
-    vx: number;
-    vy: number;
-    vz: number;
-    phase: number;
-    hue: number;
-};
 
 export default function ImmersiveMotionScene({ className = "" }: ImmersiveMotionSceneProps) {
     const mountRef = useRef<HTMLDivElement | null>(null);
@@ -97,16 +97,6 @@ export default function ImmersiveMotionScene({ className = "" }: ImmersiveMotion
         const onPointerLeave = () => {
             pointer.tx = 0.5;
             pointer.ty = 0.5;
-        };
-
-        const roundRect = (x: number, y: number, w: number, h: number, radius: number) => {
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.arcTo(x + w, y, x + w, y + h, radius);
-            ctx.arcTo(x + w, y + h, x, y + h, radius);
-            ctx.arcTo(x, y + h, x, y, radius);
-            ctx.arcTo(x, y, x + w, y, radius);
-            ctx.closePath();
         };
 
         const drawBackground = () => {
@@ -253,7 +243,6 @@ export default function ImmersiveMotionScene({ className = "" }: ImmersiveMotion
             const cx = width * 0.5;
             const cy = height * 0.48;
             const pulse = ripple * 28;
-
             [0.17, 0.3, 0.43].forEach((factor, index) => {
                 ctx.beginPath();
                 ctx.arc(cx, cy, Math.min(width, height) * factor + pulse * (index + 1) * 0.16, 0, Math.PI * 2);
@@ -261,65 +250,6 @@ export default function ImmersiveMotionScene({ className = "" }: ImmersiveMotion
                 ctx.lineWidth = index === 0 ? 2.2 : 1;
                 ctx.stroke();
             });
-
-            const panelX = width * 0.07;
-            const panelY = height * 0.11;
-            const panelW = Math.min(290, width * 0.23);
-            const panelH = Math.min(144, height * 0.18);
-
-            const panel = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
-            panel.addColorStop(0, "rgba(6, 10, 22, 0.34)");
-            panel.addColorStop(1, "rgba(6, 10, 22, 0.08)");
-            ctx.fillStyle = panel;
-            roundRect(panelX, panelY, panelW, panelH, 24);
-            ctx.fill();
-            ctx.strokeStyle = "rgba(103,232,249,0.2)";
-            ctx.stroke();
-
-            ctx.fillStyle = "rgba(226,232,240,0.96)";
-            ctx.font = "600 12px Inter, system-ui, sans-serif";
-            ctx.fillText("HOLOGRAPHIC INTERFACE", panelX + 18, panelY + 24);
-            ctx.fillStyle = "rgba(148,163,184,0.78)";
-            ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-            ctx.fillText("fluid motion / layered depth / reactive particles", panelX + 18, panelY + 48);
-
-            ctx.strokeStyle = "rgba(103,232,249,0.16)";
-            ctx.beginPath();
-            ctx.moveTo(panelX + 18, panelY + 68);
-            ctx.lineTo(panelX + panelW - 18, panelY + 68);
-            ctx.stroke();
-
-            ctx.fillStyle = "rgba(103,232,249,0.84)";
-            ctx.fillRect(panelX + 18, panelY + 80, 60 + pulse * 0.8, 4);
-            ctx.fillStyle = "rgba(129,140,248,0.72)";
-            ctx.fillRect(panelX + 18, panelY + 92, 96 + pulse * 1.1, 4);
-
-            ctx.fillStyle = "rgba(148,163,184,0.72)";
-            ctx.fillText("next-gen digital universe", panelX + 18, panelY + panelH - 18);
-
-            const cornerX = width - Math.min(240, width * 0.22) - width * 0.06;
-            const cornerY = height - Math.min(148, height * 0.18) - height * 0.1;
-            const cornerW = Math.min(240, width * 0.22);
-            const cornerH = Math.min(148, height * 0.18);
-            const corner = ctx.createLinearGradient(cornerX, cornerY, cornerX + cornerW, cornerY + cornerH);
-            corner.addColorStop(0, "rgba(6, 10, 22, 0.24)");
-            corner.addColorStop(1, "rgba(6, 10, 22, 0.07)");
-            ctx.fillStyle = corner;
-            roundRect(cornerX, cornerY, cornerW, cornerH, 22);
-            ctx.fill();
-            ctx.strokeStyle = "rgba(45,212,191,0.16)";
-            ctx.stroke();
-
-            ctx.fillStyle = "rgba(226,232,240,0.92)";
-            ctx.font = "600 11px Inter, system-ui, sans-serif";
-            ctx.fillText("SURFACE STATUS", cornerX + 16, cornerY + 22);
-            ctx.fillStyle = "rgba(148,163,184,0.78)";
-            ctx.font = "11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-            ctx.fillText("webgl-inspired • cinematic • interactive", cornerX + 16, cornerY + 46);
-            ctx.fillStyle = "rgba(103,232,249,0.82)";
-            ctx.fillRect(cornerX + 16, cornerY + 64, 80 + pulse * 1.2, 4);
-            ctx.fillStyle = "rgba(148,163,184,0.72)";
-            ctx.fillText("mouseover to deform the field", cornerX + 16, cornerY + cornerH - 18);
         };
 
         const drawScanlines = () => {

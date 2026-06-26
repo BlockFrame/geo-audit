@@ -174,24 +174,10 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
             animate={{ opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
             transition={fadeUpTransition}
-            className="relative flex min-h-[26rem] flex-col gap-4 py-2 lg:min-h-[38rem] lg:h-full"
+            className="relative flex min-h-[26rem] flex-col py-2 lg:min-h-[38rem] lg:h-full"
             aria-live="polite"
           >
             <ImmersiveMotionScene free className="h-[22rem] w-full sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" />
-            <div className="mt-1 rounded-2xl border border-cyan-300/12 bg-slate-950/20 px-4 py-4 text-sm text-slate-300/80 backdrop-blur-xl">
-              <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-cyan-200/80">{text.noAuditTitle}</p>
-              <p className="mt-1 max-w-3xl leading-relaxed">{text.noAuditBody}</p>
-              <div className="mt-4 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/6 bg-white/3 px-3 py-2">
-                  <p className="font-mono uppercase tracking-[0.18em] text-cyan-200/80">Prompt</p>
-                  <p className="mt-1 leading-relaxed text-slate-300/76">{text.samplePrompt1}</p>
-                </div>
-                <div className="rounded-xl border border-white/6 bg-white/3 px-3 py-2">
-                  <p className="font-mono uppercase tracking-[0.18em] text-cyan-200/80">Quick start</p>
-                  <p className="mt-1 leading-relaxed text-slate-300/76">{text.samplePrompt2}</p>
-                </div>
-              </div>
-            </div>
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
           </motion.div>
         )}
