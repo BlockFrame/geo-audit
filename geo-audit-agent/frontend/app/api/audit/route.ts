@@ -24,16 +24,26 @@ export async function POST(req: NextRequest) {
         return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
     }
 
-    const response = await fetch(BACKEND_AUDIT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
+    let response: Response;
+    try {
+        response = await fetch(BACKEND_AUDIT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+    } catch {
+        return Response.json(
+            { error: "Backend unreachable. Make sure the backend server is running." },
+            { status: 503 }
+        );
+    }
 
     const responseText = await response.text();
+    const isJson = (response.headers.get("content-type") ?? "").includes("application/json");
+    const safebody = responseText.trim() || (isJson ? "{}" : "");
     const contentType = response.headers.get("content-type") ?? "application/json";
 
-    return new Response(responseText, {
+    return new Response(safebody, {
         status: response.status,
         headers: {
             "Content-Type": contentType,

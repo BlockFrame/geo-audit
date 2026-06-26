@@ -177,11 +177,113 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
             className="flex min-h-[20rem] items-center justify-center py-2 lg:h-full"
             aria-live="polite"
           >
-            <GeoParticleGlobe free className="h-[20rem] w-full max-w-[52rem] sm:h-[24rem] xl:h-[28rem]" />
+            <GeoParticleGlobe free className="h-[22rem] w-full sm:h-[28rem] xl:h-[34rem]" />
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence initial={false} mode="wait">
+        {!isRunning && !hasReport && (
+          <motion.div
+            key="empty"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+            transition={fadeUpTransition}
+            className="flex flex-col py-2 lg:flex-1"
+            aria-live="polite"
+          >
+            <GeoParticleGlobe free className="h-[22rem] w-full sm:h-[28rem] xl:h-[34rem]" />
+            <motion.div
+              className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4"
+              initial={prefersReducedMotion ? false : "hidden"}
+              animate="visible"
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+            >
+              {[
+                {
+                  label: "AI CRAWLERS",
+                  value: "12",
+                  unit: "agents",
+                  status: "SCANNING",
+                  statusColor: "text-cyan-300",
+                  dotColor: "bg-cyan-400",
+                  icon: "⬡",
+                  sub: "GPT · Gemini · Perplexity · Claude",
+                  floatY: [0, -7, 0],
+                },
+                {
+                  label: "CITABILITY",
+                  value: "--",
+                  unit: "/ 100",
+                  status: "PENDING",
+                  statusColor: "text-indigo-300",
+                  dotColor: "bg-indigo-400",
+                  icon: "◎",
+                  sub: "Run audit to compute",
+                  floatY: [0, -5, 0],
+                },
+                {
+                  label: "SCHEMA",
+                  value: "0",
+                  unit: "types",
+                  status: "READY",
+                  statusColor: "text-teal-300",
+                  dotColor: "bg-teal-400",
+                  icon: "◈",
+                  sub: "JSON-LD · OpenGraph · Meta",
+                  floatY: [0, -9, 0],
+                },
+                {
+                  label: "SYS STATUS",
+                  value: "OK",
+                  unit: "",
+                  status: "NOMINAL",
+                  statusColor: "text-green-300",
+                  dotColor: "bg-green-400",
+                  icon: "◆",
+                  sub: "Engine · API · LangGraph",
+                  floatY: [0, -6, 0],
+                },
+              ].map((card, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={
+                    prefersReducedMotion
+                      ? {}
+                      : { hidden: { opacity: 0, y: 22 }, visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } } }
+                  }
+                  animate={prefersReducedMotion ? undefined : { y: card.floatY }}
+                  transition={prefersReducedMotion ? undefined : { duration: 3.6 + idx * 0.4, repeat: Infinity, ease: "easeInOut" }}
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.04, transition: { duration: 0.22 } }}
+                  className="holo-card rounded-2xl p-3 cursor-default select-none"
+                >
+                  <div className="relative z-10">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-[0.22em] text-slate-400">{card.label}</span>
+                      <span className="text-base leading-none">{card.icon}</span>
+                    </div>
+                    <p className="text-2xl font-bold tracking-tight text-slate-50">
+                      {card.value}
+                      {card.unit && <span className="ml-1 text-xs text-slate-400 font-normal">{card.unit}</span>}
+                    </p>
+                    <p className="mt-1 text-[10px] text-slate-400 truncate">{card.sub}</p>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <span
+                        className={`inline-block h-1.5 w-1.5 rounded-full ${card.dotColor}`}
+                        style={{ animation: "pulse-dot 2s ease-in-out infinite" }}
+                      />
+                      <span className={`text-[10px] font-mono tracking-widest ${card.statusColor}`}>{card.status}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+            <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </>
   );
 }

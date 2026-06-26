@@ -234,9 +234,15 @@ export default function Home() {
         body: JSON.stringify({ url: normalizedUrl }),
       });
 
-      const payload = await response.json();
+      const text = await response.text();
+      let payload: Record<string, unknown> = {};
+      try {
+        payload = text.trim() ? JSON.parse(text) : {};
+      } catch {
+        throw new Error("Invalid response from server");
+      }
       if (!response.ok) {
-        const message = payload?.detail ?? payload?.error ?? "Audit failed";
+        const message = (payload?.detail ?? payload?.error ?? "Audit failed") as string;
         throw new Error(message);
       }
 

@@ -8,8 +8,18 @@ type GeoParticleGlobeProps = {
     className?: string;
 };
 
-function clamp(value: number, min: number, max: number) {
-    return Math.min(max, Math.max(min, value));
+function clamp(v: number, lo: number, hi: number) {
+    return v < lo ? lo : v > hi ? hi : v;
+}
+
+// Seeded PRNG — deterministic so SSR & client match
+function mulberry32(seed: number) {
+    return function () {
+        seed |= 0; seed = seed + 0x6d2b79f5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
 }
 
 export default function GeoParticleGlobe({ free = false, className = "" }: GeoParticleGlobeProps) {
@@ -20,31 +30,28 @@ export default function GeoParticleGlobe({ free = false, className = "" }: GeoPa
     useEffect(() => {
         const canvas = canvasRef.current;
         const container = containerRef.current;
-        if (!canvas || !container) {
-            return;
-        }
-
+        if (!canvas || !container) return;
         const ctx = canvas.getContext("2d");
-        if (!ctx) {
-            return;
-        }
+        if (!ctx) return;
 
         let rafId = 0;
         let width = 0;
         let height = 0;
         let dpr = 1;
-
-        const pointerTarget = { x: 0, y: 0 };
-        const pointerCurrent = { x: 0, y: 0 };
-
         let phase = 0;
+        let glitchTimer = 0;
+        let glitchActive = false;
+        let glitchIntensity = 0;
+
+        const rng = mulberry32(0xdeadbeef);
+
+        const pointer = { tx: 0, ty: 0, cx: 0, cy: 0 };
 
         const resize = () => {
             const rect = container.getBoundingClientRect();
             width = rect.width;
             height = rect.height;
             dpr = window.devicePixelRatio || 1;
-
             canvas.width = Math.floor(width * dpr);
             canvas.height = Math.floor(height * dpr);
             canvas.style.width = `${Math.floor(width)}px`;
@@ -52,105 +59,203 @@ export default function GeoParticleGlobe({ free = false, className = "" }: GeoPa
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         };
 
-        const onPointerMove = (event: PointerEvent) => {
+        const onPointerMove = (e: PointerEvent) => {
             const rect = container.getBoundingClientRect();
-            const nx = (event.clientX - rect.left) / rect.width;
-            const ny = (event.clientY - rect.top) / rect.height;
-            pointerTarget.x = clamp(nx * 2 - 1, -1, 1);
-            pointerTarget.y = clamp(ny * 2 - 1, -1, 1);
+            pointer.tx = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+            pointer.ty = clamp((e.clientY - rect.top) / rect.height, 0, 1);
+        };
+        const onPointerLeave = () => { pointer.tx = 0.5; pointer.ty = 0.5; };
+        pointer.tx = 0.5; pointer.ty = 0.5;
+
+        // ── Palette (matches site: cyan / teal / indigo / magenta accent) ──
+        const C_CYAN = { r: 103, g: 232, b: 249 }; // #67e8f9
+        const C_TEAL = { r: 45, g: 212, b: 191 }; // #2dd4bf
+        const C_INDIGO = { r: 129, g: 140, b: 248 }; // #818cf8
+        const C_PINK = { r: 240, g: 171, b: 252 }; // cyberpunk accent
+        const C_GREEN = { r: 74, g: 222, b: 128 }; // neon green
+
+        const STRAND_COLORS = [C_CYAN, C_TEAL, C_INDIGO, C_PINK, C_GREEN];
+
+        const SEGMENTS = 160;
+        const STRANDS = 2;
+
+        const drawStrand = (
+            phaseOffset: number,
+            colorA: typeof C_CYAN,
+            colorB: typeof C_CYAN,
+            amp: number,
+            freq: number,
+            glitch: number,
+        ) => {
+            const midY = height * 0.5;
+            const margin = width * 0.02;
+            const span = width - margin * 2;
+
+            // Mouse ripple: attract/push particles near cursor
+            const mx = pointer.cx * width;
+            const my = pointer.cy * height;
+
+            for (let i = 0; i <= SEGMENTS; i++) {
+                const t = i / SEGMENTS;
+                const x = margin + t * span;
+                const a = t * Math.PI * freq + phase + phaseOffset;
+
+                // glitch horizontal slice displacement
+                const glitchY = glitch > 0 && rng() < 0.08
+                    ? (rng() - 0.5) * 28 * glitch
+                    : 0;
+
+                const rawY = midY + Math.sin(a) * amp + glitchY;
+
+                // mouse ripple deformation
+                const dist = Math.hypot(x - mx, rawY - my);
+                const ripple = Math.exp(-(dist * dist) / (width * height * 0.035));
+                const pushX = (x - mx) * 0.18 * ripple;
+                const pushY = (rawY - my) * 0.24 * ripple;
+                const finalX = x + (prefersReducedMotion ? 0 : pushX);
+                const finalY = rawY + (prefersReducedMotion ? 0 : pushY);
+
+                // depth: sin gives Z-like perspective
+                const z = (Math.sin(a) + 1) * 0.5;
+                const alpha = 0.28 + z * 0.68;
+
+                // interpolate color along t for gradient feel
+                const cr = Math.round(colorA.r + (colorB.r - colorA.r) * t);
+                const cg = Math.round(colorA.g + (colorB.g - colorA.g) * t);
+                const cb = Math.round(colorA.b + (colorB.b - colorA.b) * t);
+
+                const r = 1.4 + z * 3.2;
+
+                if (glitch > 0.4) {
+                    // RGB aberration: draw three offset blobs
+                    ctx.globalAlpha = alpha * 0.45;
+                    ctx.fillStyle = `rgb(${cr + 30},0,0)`;
+                    ctx.beginPath(); ctx.arc(finalX - 3 * glitch, finalY, r, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = `rgb(0,${cg},0)`;
+                    ctx.beginPath(); ctx.arc(finalX, finalY, r, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = `rgb(0,0,${cb + 30})`;
+                    ctx.beginPath(); ctx.arc(finalX + 3 * glitch, finalY, r, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+                ctx.beginPath(); ctx.arc(finalX, finalY, r, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // glow halo
+                if (z > 0.75) {
+                    ctx.globalAlpha = (z - 0.75) * 0.5;
+                    const glow = ctx.createRadialGradient(finalX, finalY, 0, finalX, finalY, r * 5);
+                    glow.addColorStop(0, `rgba(${cr},${cg},${cb},0.6)`);
+                    glow.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+                    ctx.fillStyle = glow;
+                    ctx.beginPath(); ctx.arc(finalX, finalY, r * 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            // draw rungs (base pairs)
+            const rungEvery = 8;
+            for (let i = 0; i <= SEGMENTS; i += rungEvery) {
+                const t = i / SEGMENTS;
+                const x = margin + t * span;
+                const a = t * Math.PI * freq + phase + phaseOffset;
+                const y1 = height * 0.5 + Math.sin(a) * amp;
+                const y2 = height * 0.5 - Math.sin(a) * amp;
+                const z = (Math.sin(a) + 1) * 0.5;
+
+                const gx = prefersReducedMotion ? 0 : (x - pointer.cx * width) * 0.1 * Math.exp(-(Math.hypot(x - pointer.cx * width, 0) ** 2) / (width * width * 0.06));
+
+                ctx.globalAlpha = 0.15 + z * 0.22;
+                ctx.strokeStyle = `rgba(${C_INDIGO.r},${C_INDIGO.g},${C_INDIGO.b},1)`;
+                ctx.lineWidth = 0.8 + z * 0.6;
+                ctx.beginPath();
+                ctx.moveTo(x + gx, y1);
+                ctx.lineTo(x + gx, y2);
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
         };
 
-        const onPointerLeave = () => {
-            pointerTarget.x = 0;
-            pointerTarget.y = 0;
+        const drawScanlines = () => {
+            const lineH = 4;
+            for (let y = 0; y < height; y += lineH) {
+                ctx.fillStyle = "rgba(0,0,0,0.06)";
+                ctx.fillRect(0, y, width, 1);
+            }
+        };
+
+        const drawHorizonGlow = () => {
+            const mid = height * 0.5;
+            const glow = ctx.createLinearGradient(0, mid - height * 0.36, 0, mid + height * 0.36);
+            glow.addColorStop(0, "rgba(2,6,23,0)");
+            glow.addColorStop(0.4, "rgba(103,232,249,0.06)");
+            glow.addColorStop(0.5, "rgba(103,232,249,0.12)");
+            glow.addColorStop(0.6, "rgba(103,232,249,0.06)");
+            glow.addColorStop(1, "rgba(2,6,23,0)");
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, width, height);
+        };
+
+        const drawGlitchSlices = (intensity: number) => {
+            if (intensity <= 0) return;
+            const slices = Math.floor(intensity * 6);
+            for (let s = 0; s < slices; s++) {
+                const sliceY = rng() * height;
+                const sliceH = rng() * 12 + 2;
+                const shift = (rng() - 0.5) * 40 * intensity;
+                if (sliceY + sliceH < height && sliceY > 0) {
+                    try {
+                        const imgData = ctx.getImageData(0, sliceY, width, sliceH);
+                        ctx.putImageData(imgData, shift, sliceY);
+                    } catch { /* cross-origin guard */ }
+                }
+            }
         };
 
         const draw = () => {
-            pointerCurrent.x += (pointerTarget.x - pointerCurrent.x) * 0.1;
-            pointerCurrent.y += (pointerTarget.y - pointerCurrent.y) * 0.1;
+            pointer.cx += (pointer.tx - pointer.cx) * 0.09;
+            pointer.cy += (pointer.ty - pointer.cy) * 0.09;
 
             if (!prefersReducedMotion) {
-                phase += 0.024;
+                phase += 0.018;
+                glitchTimer += 1;
+                // trigger glitch burst every ~180 frames, lasts ~20 frames
+                if (!glitchActive && glitchTimer > 140 + Math.floor(rng() * 80)) {
+                    glitchActive = true;
+                    glitchIntensity = 0;
+                    glitchTimer = 0;
+                }
+                if (glitchActive) {
+                    glitchIntensity = Math.min(1, glitchIntensity + 0.12);
+                    if (glitchIntensity >= 1) glitchActive = false;
+                } else {
+                    glitchIntensity = Math.max(0, glitchIntensity - 0.06);
+                }
             }
 
             ctx.clearRect(0, 0, width, height);
+            drawHorizonGlow();
 
-            const midX = width * 0.5;
-            const midY = height * 0.5;
+            const amp = Math.min(height * 0.28, width * 0.09);
+            const freq = 5.5;
 
-            const gradient = ctx.createRadialGradient(midX, midY, height * 0.12, midX, midY, height * 0.72);
-            gradient.addColorStop(0, "rgba(103, 232, 249, 0.14)");
-            gradient.addColorStop(0.5, "rgba(45, 212, 191, 0.08)");
-            gradient.addColorStop(1, "rgba(2, 6, 23, 0)");
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, width, height);
+            // two strands π out of phase, different colour gradients
+            drawStrand(0, STRAND_COLORS[0], STRAND_COLORS[2], amp, freq, glitchIntensity);
+            drawStrand(Math.PI, STRAND_COLORS[1], STRAND_COLORS[4], amp, freq, glitchIntensity);
 
-            const segments = 94;
-            const helixRadius = Math.min(height * 0.22, width * 0.06);
-            const leftPad = width * 0.08;
-            const rightPad = width * 0.08;
-            const axisSpan = Math.max(40, width - leftPad - rightPad);
+            drawGlitchSlices(glitchIntensity * 0.7);
+            drawScanlines();
 
-            const mouseX = ((pointerCurrent.x + 1) * 0.5) * width;
-            const mouseY = ((pointerCurrent.y + 1) * 0.5) * height;
-
-            for (let i = 0; i <= segments; i += 1) {
-                const t = i / segments;
-                const x = leftPad + t * axisSpan;
-
-                const a = t * Math.PI * 8 + phase;
-                const zWave = Math.cos(a);
-
-                const baseY = midY + Math.sin(a) * helixRadius;
-                const antiY = midY - Math.sin(a) * helixRadius;
-
-                const deformDist = Math.hypot(x - mouseX, baseY - mouseY);
-                const deformStrength = prefersReducedMotion ? 0 : Math.exp(-(deformDist * deformDist) / (Math.max(width, height) * 120));
-
-                const lift = (mouseY - midY) * 0.12 * deformStrength;
-                const push = (x - mouseX) * 0.08 * deformStrength;
-
-                const y1 = baseY + lift + push * 0.15;
-                const y2 = antiY - lift - push * 0.15;
-
-                const zFactor1 = clamp((zWave + 1) * 0.5, 0, 1);
-                const zFactor2 = clamp((1 - zWave) * 0.5, 0, 1);
-
-                if (i % 2 === 0) {
-                    ctx.strokeStyle = `rgba(129, 140, 248, ${0.16 + zFactor1 * 0.2})`;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(x, y1);
-                    ctx.lineTo(x, y2);
-                    ctx.stroke();
-                }
-
-                const r1 = 1.9 + zFactor1 * 2.6;
-                const r2 = 1.9 + zFactor2 * 2.6;
-
-                ctx.fillStyle = `rgba(103, 232, 249, ${0.35 + zFactor1 * 0.5})`;
-                ctx.beginPath();
-                ctx.arc(x, y1, r1, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = `rgba(45, 212, 191, ${0.32 + zFactor2 * 0.52})`;
-                ctx.beginPath();
-                ctx.arc(x, y2, r2, 0, Math.PI * 2);
-                ctx.fill();
-
-                if (i % 7 === 0) {
-                    ctx.fillStyle = `rgba(129, 140, 248, ${0.18 + Math.max(zFactor1, zFactor2) * 0.32})`;
-                    ctx.fillRect(x + (zWave * 8), midY + Math.sin(a * 0.5) * helixRadius * 0.18, 1.2, 1.2);
-                }
-            }
-
+            // sweep light
             if (!prefersReducedMotion) {
-                const sweepX = leftPad + ((phase * 26) % (axisSpan + leftPad));
-                const sweepGradient = ctx.createLinearGradient(sweepX - 80, 0, sweepX + 80, 0);
-                sweepGradient.addColorStop(0, "rgba(103, 232, 249, 0)");
-                sweepGradient.addColorStop(0.5, "rgba(103, 232, 249, 0.12)");
-                sweepGradient.addColorStop(1, "rgba(103, 232, 249, 0)");
-                ctx.fillStyle = sweepGradient;
+                const sweepX = (phase * 38) % (width + 120) - 60;
+                const sg = ctx.createLinearGradient(sweepX - 60, 0, sweepX + 60, 0);
+                sg.addColorStop(0, "rgba(103,232,249,0)");
+                sg.addColorStop(0.5, "rgba(103,232,249,0.09)");
+                sg.addColorStop(1, "rgba(103,232,249,0)");
+                ctx.fillStyle = sg;
                 ctx.fillRect(0, 0, width, height);
             }
 
@@ -160,15 +265,14 @@ export default function GeoParticleGlobe({ free = false, className = "" }: GeoPa
         resize();
         draw();
 
-        const resizeObserver = new ResizeObserver(() => resize());
-        resizeObserver.observe(container);
-
+        const ro = new ResizeObserver(() => resize());
+        ro.observe(container);
         container.addEventListener("pointermove", onPointerMove);
         container.addEventListener("pointerleave", onPointerLeave);
 
         return () => {
             window.cancelAnimationFrame(rafId);
-            resizeObserver.disconnect();
+            ro.disconnect();
             container.removeEventListener("pointermove", onPointerMove);
             container.removeEventListener("pointerleave", onPointerLeave);
         };
@@ -179,20 +283,15 @@ export default function GeoParticleGlobe({ free = false, className = "" }: GeoPa
             ref={containerRef}
             initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.97, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
             className={[
-                "relative mx-auto h-[17rem] w-full max-w-[40rem] overflow-hidden sm:h-[20rem]",
+                "relative mx-auto overflow-hidden",
                 free ? "mb-0 rounded-none border-0 bg-transparent" : "mb-8 rounded-[1.6rem] border border-cyan-300/20 bg-slate-950/35",
                 className,
             ].join(" ")}
             aria-hidden="true"
         >
             <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-            {!free && (
-                <div className="pointer-events-none absolute inset-x-0 top-3 text-center">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-cyan-200/80">DNA FIELD</p>
-                </div>
-            )}
         </motion.div>
     );
 }
