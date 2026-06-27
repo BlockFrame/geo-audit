@@ -34,15 +34,15 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
   ];
 
   return (
-    <section className="glass-panel rounded-2xl p-6">
+    <section className="glass-panel rounded-2xl p-4 sm:p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-slate-400">Full verbose report</p>
-          <h2 className="mt-1 text-xl font-semibold text-slate-100">Detailed GEO audit</h2>
+          <h2 className="mt-1 text-lg font-semibold text-slate-100 sm:text-xl">Detailed GEO audit</h2>
           <p className="mt-2 text-sm text-slate-300/80">
             Consolidated view of the final report with score breakdown, platform readiness, and direct export access.
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:gap-3 lg:grid-cols-4">
             {topMetrics.map((metric) => (
               <div key={metric.label} className="glass-chip rounded-xl px-3 py-3">
                 <p className="text-[10px] uppercase tracking-wider text-slate-400">{metric.label}</p>
@@ -51,7 +51,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
             ))}
           </div>
         </div>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-full lg:max-w-md">
           <ReportDownloads report={report} locale={locale} />
         </div>
       </div>

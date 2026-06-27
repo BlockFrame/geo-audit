@@ -1,8 +1,9 @@
 "use client";
 
-import { useCoAgent } from "@copilotkit/react-core";
+import { useCoAgent, useCopilotChat } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
+import { Role, TextMessage } from "@copilotkit/runtime-client-gql";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useState } from "react";
 
@@ -218,6 +219,7 @@ export default function Home() {
       messages: [],
     },
   });
+  const { appendMessage } = useCopilotChat();
 
   const dashboardState = directAuditState ?? state;
   const isDirectAuditRunning = directAuditState?.status === "analyzing";
@@ -268,6 +270,24 @@ export default function Home() {
 
   const runDirectAudit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const normalizedUrl = normalizeAuditUrl(auditUrl);
+    if (normalizedUrl) {
+      const chatPrompt = locale === "it"
+        ? `Esegui un GEO audit per ${normalizedUrl}`
+        : `Run a GEO audit for ${normalizedUrl}`;
+      try {
+        await appendMessage(
+          new TextMessage({
+            id: crypto.randomUUID(),
+            role: Role.User,
+            content: chatPrompt,
+          }),
+          { followUp: false },
+        );
+      } catch {
+        // Keep direct audit flow resilient even if chat injection fails.
+      }
+    }
     await runAuditForUrl(auditUrl);
   };
 
@@ -304,12 +324,26 @@ export default function Home() {
         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden"
+        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:flex-row"
       >
 
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
-        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:overflow-y-auto" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
+        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:flex-col">
+            {showHeroLanding && (
+              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.75rem] md:rounded-3xl" aria-hidden="true">
+                <motion.div
+                  className="absolute -top-24 left-[-12%] h-72 w-[72%] rounded-full bg-gradient-to-r from-violet-500/24 via-fuchsia-500/16 to-transparent blur-3xl"
+                  animate={prefersReducedMotion ? { opacity: 0.85 } : { x: [0, 26, -14, 0], y: [0, 12, -8, 0], opacity: [0.7, 0.95, 0.8, 0.7] }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 11, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute bottom-[-7rem] right-[-8%] h-80 w-[70%] rounded-full bg-gradient-to-l from-indigo-500/22 via-violet-500/14 to-transparent blur-3xl"
+                  animate={prefersReducedMotion ? { opacity: 0.82 } : { x: [0, -22, 12, 0], y: [0, -10, 7, 0], opacity: [0.72, 0.9, 0.78, 0.72] }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 12.5, repeat: Infinity, ease: "easeInOut", delay: 0.35 }}
+                />
+              </div>
+            )}
             {/* Header */}
             <motion.header
               layout
@@ -368,9 +402,10 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <h1 className="text-2xl md:text-3xl font-semibold tracking-tight shimmer-text">GEO Audit Agent</h1>
-                    <p className="mt-1 max-w-2xl text-sm text-slate-300/80 sm:text-[15px]">
-                      {t.subtitle}
+                    <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.32em] text-cyan-200/70">{t.heroEyebrow}</p>
+                    <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">{t.heroTitle}</h1>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300/82 sm:text-base">
+                      {t.heroBody}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <a

@@ -46,7 +46,7 @@ export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-6">
+    <div className="glass-panel rounded-2xl p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
           {tableText.title}
@@ -56,7 +56,36 @@ export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="space-y-3 md:hidden">
+        {crawlers.map((c) => {
+          const style = ACCESS_STYLES[c.access] ?? ACCESS_STYLES.unknown;
+          return (
+            <div key={c.name} className="rounded-xl border border-slate-400/20 bg-slate-900/35 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-mono text-xs text-slate-100 break-all">{c.name}</p>
+                {c.tier && (
+                  <span className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded border ${c.tier === 1 ? "bg-emerald-400/20 text-emerald-100 border-emerald-300/40" :
+                    c.tier === 2 ? "bg-sky-400/20 text-sky-100 border-sky-300/40" :
+                      "bg-slate-400/20 text-slate-300 border-slate-300/30"
+                    }`}>T{c.tier}</span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-slate-300/85">{c.company}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <span className={`text-xs px-1.5 py-0.5 rounded ${TYPE_BADGE[c.type] ?? ""}`}>{c.type}</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${style.className}`}>
+                  {accessLabels[c.access as keyof typeof accessLabels] ?? style.label}
+                </span>
+                {c.explicitly_configured
+                  ? <span className="text-xs text-emerald-200">✓ {tableText.explicit}</span>
+                  : <span className="text-xs text-slate-400">{tableText.wildcard}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-xs text-slate-300/70 border-b border-slate-400/20">

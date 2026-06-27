@@ -45,7 +45,8 @@ tools = [
     compile_geo_report,
 ]
 
-model = build_chat_model().bind_tools(tools)
+base_model = build_chat_model()
+model = base_model.bind_tools(tools)
 tool_node = ToolNode(tools)
 MAX_GRAPH_MESSAGES = 40
 ALLOWED_TOOL_NAME = "compile_geo_report"
@@ -60,6 +61,10 @@ BLOCKED_CHAT_PATTERNS = [
     re.compile(r"\b(api[\s_-]?key|token|password|secret|credential|cookie|session)\b", re.IGNORECASE),
     re.compile(r"\b(malware|ransomware|phishing|exploit|reverse shell|payload|sql injection|xss|csrf|ssrf|rce|privilege escalation)\b", re.IGNORECASE),
     re.compile(r"\b(jailbreak|prompt injection|dan)\b", re.IGNORECASE),
+]
+AUDIT_INTENT_PATTERNS = [
+    re.compile(r"\b(run|rerun|re-run|start|launch|perform|execute|scan|check|audit|analy[sz]e|refresh)\b", re.IGNORECASE),
+    re.compile(r"\b(esegui|riesegui|rilancia|avvia|fai|analizza|analisi|audit|controlla|verifica|aggiorna)\b", re.IGNORECASE),
 ]
 
 def _message_text(content) -> str:
@@ -177,6 +182,13 @@ def _chat_guardrail_response(state: GeoAuditState, language: str) -> AIMessage |
             return AIMessage(content=_guardrail_message(language, "url"))
 
     return None
+
+
+def _is_explicit_audit_intent(text: str) -> bool:
+    normalized = (text or "").strip()
+    if not normalized:
+        return False
+    return any(pattern.search(normalized) for pattern in AUDIT_INTENT_PATTERNS)
 
 
 def _enforce_tool_guardrails(response: AIMessage, language: str) -> AIMessage:
@@ -313,11 +325,12 @@ def call_model(state: GeoAuditState):
     messages = state.get("messages", [])
     language = _detect_language(state)
     system = SystemMessage(content=build_geo_audit_system_prompt(language))
+    latest_text = _latest_user_text(state)
     guardrail_response = _chat_guardrail_response(state, language)
     if guardrail_response is not None:
         return {"messages": [guardrail_response], "status": "error"}
 
-    audit_url = _extract_audit_url_from_text(_latest_user_text(state))
+    audit_url = _extract_audit_url_from_text(latest_text)
     if audit_url:
         return {
             "messages": [AIMessage(content="", tool_calls=[{
@@ -329,6 +342,22 @@ def call_model(state: GeoAuditState):
             "status": "analyzing",
             "url": audit_url,
         }
+
+    # Follow-up chat questions after a completed audit should use existing state
+    # instead of rerunning the audit tool and repeating "Audit completed for...".
+    if state.get("report") and not _is_explicit_audit_intent(latest_text):
+        try:
+            followup_system = SystemMessage(
+                content=(
+                    "Answer using the existing report in state. Do not run tools."
+                    if language == "en"
+                    else "Rispondi usando il report gia presente nello stato. Non chiamare strumenti."
+                )
+            )
+            response = base_model.invoke([system, followup_system] + messages)
+            return {"messages": [AIMessage(content=_message_text(getattr(response, "content", "")))], "status": "complete"}
+        except Exception:
+            pass
 
     try:
         response = _normalize_textual_tool_calls(model.invoke([system] + messages))
