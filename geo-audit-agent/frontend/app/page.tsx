@@ -8,7 +8,6 @@ import { useEffect, useLayoutEffect, useState } from "react";
 
 import AuditDashboardContent from "@/components/dashboard/AuditDashboardContent";
 import MethodologyModal from "@/components/MethodologyModal";
-import ShaderBackground from "@/components/ui/shader-background";
 import { useGeoAuditCopilot } from "@/hooks/useGeoAuditCopilot";
 import { GeoAuditState, GeoReport } from "@/lib/types";
 
@@ -30,7 +29,6 @@ const UI_TEXT: Record<AppLocale, {
   heroEyebrow: string;
   heroTitle: string;
   heroBody: string;
-  heroStatus: string;
   subtitle: string;
   scoreLabel: string;
   runningPrefix: string;
@@ -56,7 +54,6 @@ const UI_TEXT: Record<AppLocale, {
     heroEyebrow: "AI visibility command center",
     heroTitle: "GEO Audit Agent",
     heroBody: "Analizza subito come il tuo sito viene letto da motori generativi, crawler AI e layer semantici: un audit pensato per capire visibilita, citabilita e prontezza tecnica in pochi secondi.",
-    heroStatus: "Backend unreachable. Make sure the backend server is running.",
     subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
@@ -86,7 +83,6 @@ const UI_TEXT: Record<AppLocale, {
     heroEyebrow: "AI visibility command center",
     heroTitle: "GEO Audit Agent",
     heroBody: "Instantly inspect how your site is interpreted by generative engines, AI crawlers, and semantic layers, with an audit focused on visibility, citability, and technical readiness.",
-    heroStatus: "Backend unreachable. Make sure the backend server is running.",
     subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
@@ -314,9 +310,6 @@ export default function Home() {
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
         <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:overflow-y-auto" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:flex-col">
-            {showHeroLanding && (
-              <ShaderBackground className="pointer-events-none absolute inset-0 -z-10 h-full w-full rounded-[1.75rem] opacity-75 md:rounded-3xl" />
-            )}
             {/* Header */}
             <motion.header
               layout
@@ -331,15 +324,6 @@ export default function Home() {
                     <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.36em] text-cyan-200/75">{t.heroEyebrow}</p>
                     <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl xl:text-[4.5rem] xl:leading-[0.94]">{t.heroTitle}</h1>
                     <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300/82 sm:text-lg">{t.heroBody}</p>
-                    <motion.div
-                      initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
-                      animate={prefersReducedMotion ? { opacity: 1 } : { opacity: [0.72, 1, 0.8], y: 0 }}
-                      transition={prefersReducedMotion ? { duration: 0 } : { duration: 2.8, repeat: Infinity, repeatType: "mirror" }}
-                      className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-300/20 bg-slate-950/55 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.24em] text-cyan-200/85"
-                    >
-                      <span className="inline-block h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.8)]" />
-                      <span className="truncate">{t.heroStatus}</span>
-                    </motion.div>
                     <div className="mt-5 flex flex-wrap items-center gap-2">
                       <a
                         href={SOCIAL_LINKS.github}

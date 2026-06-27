@@ -7,7 +7,6 @@ import ActionPlanCards from "@/components/ActionPlanCards";
 import BrandPresencePanel from "@/components/BrandPresencePanel";
 import CitabilityPanel from "@/components/CitabilityPanel";
 import CrawlerMatrix from "@/components/CrawlerMatrix";
-import ImmersiveMotionScene from "@/components/ImmersiveMotionScene";
 import LlmsTxtPreview from "@/components/LlmsTxtPreview";
 import SchemaReport from "@/components/SchemaReport";
 import TechnicalChecksPanel from "@/components/TechnicalChecksPanel";
@@ -177,7 +176,7 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
             className="relative flex min-h-[26rem] flex-col py-2 lg:min-h-[38rem] lg:h-full"
             aria-live="polite"
           >
-            <ImmersiveMotionScene free className="h-[22rem] w-full sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" />
+            <div className="h-[22rem] w-full rounded-2xl border border-cyan-300/10 bg-gradient-to-br from-slate-950/70 via-slate-900/55 to-slate-950/70 sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" aria-hidden="true" />
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
           </motion.div>
         )}
