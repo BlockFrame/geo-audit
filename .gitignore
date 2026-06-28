@@ -1,4 +1,35 @@
-﻿.venv/
+# Environment secrets
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+
+# Python
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+**/npm-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# Local editor / OS files
+.DS_Store
+Thumbs.db
 .vscode/
-__pycache__/
-*.pyc
+**/.vscode/
+.claude/
+**/.claude/
+
+# Local overrides
+**/*.local
+
+# Local test artifacts
+**/test-results/
+
+# Local scratch files
+LiquidMetalHero.tsx
