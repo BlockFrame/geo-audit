@@ -66,6 +66,7 @@ BACKEND_URL=http://127.0.0.1:8000/copilotkit
 BACKEND_AGUI_URL=http://127.0.0.1:8000/agui/default
 
 # Public links (shown in UI)
+NEXT_PUBLIC_GITHUB_URL=https://github.com/BlockFrame/geo-audit
 NEXT_PUBLIC_DISCORD_URL=https://discord.com/invite/your-server
 NEXT_PUBLIC_LINKEDIN_URL=https://www.linkedin.com/in/your-profile/
 NEXT_PUBLIC_FEEDBACK_FORM_URL=https://your-feedback-form-url

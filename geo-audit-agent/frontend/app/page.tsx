@@ -47,7 +47,7 @@ const UI_TEXT: Record<AppLocale, {
     loadingPlan: "Building action plan...",
     loadingLlms: "Generating llms.txt...",
     loadingSchema: "Checking schema markup...",
-    heroEyebrow: "AI visibility command center",
+    heroEyebrow: "Beta Version",
     heroTitle: "GEO Audit Agent",
     heroBody: "Analizza subito come il tuo sito viene letto da motori generativi, crawler AI e layer semantici: un audit pensato per capire visibilita, citabilita e prontezza tecnica in pochi secondi. Non salviamo alcun dato: e un progetto open source attualmente in beta.",
     scoreLabel: "GEO Score",
@@ -75,7 +75,7 @@ const UI_TEXT: Record<AppLocale, {
     loadingPlan: "Building action plan...",
     loadingLlms: "Generating llms.txt...",
     loadingSchema: "Checking schema markup...",
-    heroEyebrow: "AI visibility command center",
+    heroEyebrow: "Beta Version",
     heroTitle: "GEO Audit Agent",
     heroBody: "Instantly inspect how your site is interpreted by generative engines, AI crawlers, and semantic layers, with an audit focused on visibility, citability, and technical readiness. We do not store any data: this is an open-source project currently in beta.",
     scoreLabel: "GEO Score",
@@ -125,6 +125,51 @@ function extractAuditUrl(value: string) {
   }
 
   return normalizeAuditUrl(domainMatch[0]);
+}
+
+function scoreBand(score?: number, locale: AppLocale = "en") {
+  const value = score ?? 0;
+  if (value >= 75) {
+    return locale === "it" ? "forte" : "strong";
+  }
+  if (value >= 50) {
+    return locale === "it" ? "medio" : "moderate";
+  }
+  return locale === "it" ? "debole" : "weak";
+}
+
+function isAuditIntentMessage(message: string) {
+  return /\b(run|start|launch|execute|audit|analy[sz]e|check|scan|esegui|avvia|analizza|controlla)\b/i.test(message);
+}
+
+function buildAuditRecap(report: GeoReport, locale: AppLocale) {
+  const url = report.url ?? "";
+  const score = report.geo_score ?? 0;
+  const recommendations = report.recommendations ?? [];
+  const topIssues = recommendations.slice(0, 3).map((item) => item.action);
+  const quickWin = recommendations.find((item) => item.priority !== "low")?.action ?? recommendations[0]?.action;
+
+  const topIssuesBlock = topIssues.length > 0
+    ? topIssues.map((item, index) => `${index + 1}. ${item}`).join("\n")
+    : locale === "it"
+      ? "1. Nessun problema prioritario rilevato"
+      : "1. No priority issues detected";
+
+  if (locale === "it") {
+    return `Audit completato per ${url}.
+
+- GEO score: ${score}/100 (${scoreBand(score, locale)})
+- Top issues:
+${topIssuesBlock}
+- Quick win: ${quickWin ?? "Nessun quick win disponibile"}`;
+  }
+
+  return `Audit completed for ${url}.
+
+- GEO score: ${score}/100 (${scoreBand(score, locale)})
+- Top issues:
+${topIssuesBlock}
+- Quick win: ${quickWin ?? "No quick win available"}`;
 }
 
 function buildStateFromReport(report: GeoReport): GeoAuditState {
@@ -247,12 +292,14 @@ export default function Home() {
         throw new Error(message);
       }
 
-      const reportState = buildStateFromReport(payload as GeoReport);
+      const reportPayload = payload as GeoReport;
+      const reportState = buildStateFromReport(reportPayload);
       setDirectAuditState(reportState);
       try {
-        const completionMessage = locale === "it"
-          ? `Audit completato per ${normalizedUrl}.`
-          : `Audit completed for ${normalizedUrl}.`;
+        const completionMessage = buildAuditRecap(
+          { ...reportPayload, url: reportPayload.url ?? normalizedUrl },
+          locale,
+        );
         await appendMessage(
           new TextMessage({
             id: crypto.randomUUID(),
@@ -299,7 +346,7 @@ export default function Home() {
 
   const runDashboardAuditFromChat = async (message: string) => {
     const extractedUrl = extractAuditUrl(message);
-    if (!extractedUrl) {
+    if (!extractedUrl || !isAuditIntentMessage(message)) {
       return;
     }
 
@@ -322,9 +369,6 @@ export default function Home() {
 
   const hasReport = Boolean(dashboardState.report);
   const showHeroLanding = !hasReport && !isDirectAuditRunning;
-  const focusAuditInput = () => {
-    auditInputRef.current?.focus();
-  };
   const socialLinks = [
     { key: "github", label: t.socialGithub, href: process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/BlockFrame/geo-audit" },
     { key: "linkedin", label: t.socialLinkedin, href: process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "https://www.linkedin.com" },
@@ -346,15 +390,13 @@ export default function Home() {
         <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
             {showHeroLanding ? (
-              <div className="flex flex-1 flex-col justify-center gap-4">
+              <div className="relative flex flex-1 flex-col justify-center gap-4 pb-20">
                 <LiquidMetalHero
                   className="min-h-0 py-0"
                   badge={t.heroEyebrow}
                   title={t.heroTitle}
                   subtitle={t.heroBody}
-                  primaryCtaLabel={locale === "it" ? "Inizia l'audit" : "Start audit"}
                   secondaryCtaLabel="How KPIs are calculated"
-                  onPrimaryCtaClick={focusAuditInput}
                   onSecondaryCtaClick={() => setShowMethodology(true)}
                 />
 
@@ -403,7 +445,7 @@ export default function Home() {
                     </a>
                   ))}
                 </div>
-                <p className="poweredBy relative z-10 mx-auto mt-3 max-w-2xl rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
+                <p className="poweredBy absolute bottom-4 left-1/2 z-10 w-[min(92%,42rem)] -translate-x-1/2 rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
                   {t.betaFooter}
                 </p>
               </div>
@@ -519,7 +561,7 @@ export default function Home() {
                     showEmptyState={false}
                   />
                 </div>
-                <p className="poweredBy mt-3 rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
+                <p className="poweredBy mt-auto pt-3 rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
                   {t.betaFooter}
                 </p>
               </>

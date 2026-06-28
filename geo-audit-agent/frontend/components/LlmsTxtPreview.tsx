@@ -44,7 +44,16 @@ export default function LlmsTxtPreview({ content, status, locale = "en" }: Props
             {labels.subtitle}
           </p>
         </div>
-        <span className={`text-xs px-2 py-1 rounded glass-chip ${cfg.className}`}>{cfg.label}</span>
+        <div className="flex items-center gap-2">
+          <span
+            className="cursor-help text-xs text-slate-300/80"
+            title="llms.txt status metric is determined by HTTP detection and accessibility checks (found / missing / blocked)."
+            aria-label="How llms.txt metric is calculated"
+          >
+            ℹ
+          </span>
+          <span className={`text-xs px-2 py-1 rounded glass-chip ${cfg.className}`}>{cfg.label}</span>
+        </div>
       </div>
 
       {/* Code block */}

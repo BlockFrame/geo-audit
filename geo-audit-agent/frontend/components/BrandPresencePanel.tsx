@@ -54,9 +54,18 @@ export default function BrandPresencePanel({ brand, content, locale = "en" }: Pr
                         AI platform presence & trust signals
                     </p>
                 </div>
-                <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
-                    {score}<span className="text-sm text-slate-400">/100</span>
-                </span>
+                <div className="flex items-center gap-2">
+                    <span
+                        className="cursor-help text-xs text-slate-300/80"
+                        title="Brand/content score comes from platform presence signals plus E-E-A-T indicators and content depth provided in the report."
+                        aria-label="How brand and content score is calculated"
+                    >
+                        ℹ
+                    </span>
+                    <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
+                        {score}<span className="text-sm text-slate-400">/100</span>
+                    </span>
+                </div>
             </div>
 
             {/* Platform presence grid */}

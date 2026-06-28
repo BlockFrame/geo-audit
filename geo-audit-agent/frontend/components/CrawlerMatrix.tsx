@@ -51,9 +51,18 @@ export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
         <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
           {tableText.title}
         </h2>
-        <span className={`text-xs px-2 py-1 rounded glass-chip ${configured === 0 ? "text-amber-200" : "text-emerald-200"}`}>
-          {configured}/{crawlers.length} {tableText.configured}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className="cursor-help text-xs text-slate-300/80"
+            title="Crawler matrix metrics are computed from robots.txt access states per crawler: allowed, partial, blocked, and explicit configuration coverage."
+            aria-label="How crawler metrics are calculated"
+          >
+            ℹ
+          </span>
+          <span className={`text-xs px-2 py-1 rounded glass-chip ${configured === 0 ? "text-amber-200" : "text-emerald-200"}`}>
+            {configured}/{crawlers.length} {tableText.configured}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-3 md:hidden">

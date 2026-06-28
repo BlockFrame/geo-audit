@@ -49,6 +49,13 @@ export default function CitabilityPanel({ score, verdict, details, locale = "en"
                     </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
+                    <span
+                        className="cursor-help text-xs text-slate-300/80"
+                        title="Citability is computed from sub-metrics: answer passages, factual density, authority signals, content length, structure, and unique data."
+                        aria-label="How citability score is calculated"
+                    >
+                        ℹ
+                    </span>
                     <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
                         {score}<span className="text-sm text-slate-400">/100</span>
                     </span>

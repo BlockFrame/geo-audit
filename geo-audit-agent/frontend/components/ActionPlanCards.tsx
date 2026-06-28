@@ -50,12 +50,28 @@ export default function ActionPlanCards({ recommendations, locale = "en" }: Prop
     medium: labels.medium,
     low: labels.low,
   } as const;
+  const criticalCount = recommendations.filter((item) => item.priority === "critical").length;
+  const highCount = recommendations.filter((item) => item.priority === "high").length;
 
   return (
     <div className="glass-panel rounded-2xl p-6">
-      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
-        {labels.title}
-      </h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+          {labels.title}
+        </h2>
+        <div className="flex items-center gap-2">
+          <span
+            className="cursor-help text-xs text-slate-300/80"
+            title="Action plan is prioritized from report recommendations using priority, impact, and effort metadata."
+            aria-label="How action plan metrics are calculated"
+          >
+            ℹ
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {criticalCount} critical · {highCount} high
+          </span>
+        </div>
+      </div>
 
       <ol className="space-y-3">
         {recommendations.map((rec, i) => {

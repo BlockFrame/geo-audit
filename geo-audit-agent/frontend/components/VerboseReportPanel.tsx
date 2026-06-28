@@ -38,7 +38,16 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-wider text-slate-400">Full verbose report</p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-100 sm:text-xl">Detailed GEO audit</h2>
+          <div className="mt-1 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-slate-100 sm:text-xl">Detailed GEO audit</h2>
+            <span
+              className="cursor-help text-xs text-slate-300/80"
+              title="Macro KPI values shown here are read directly from report fields (geo_score, citability_score, technical_audit.score, content_quality.score)."
+              aria-label="How verbose report KPI values are calculated"
+            >
+              ℹ
+            </span>
+          </div>
           <p className="mt-2 text-sm text-slate-300/80">
             Consolidated view of the final report with score breakdown, platform readiness, and direct export access.
           </p>

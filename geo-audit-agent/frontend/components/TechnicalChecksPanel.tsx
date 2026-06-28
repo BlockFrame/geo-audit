@@ -89,9 +89,18 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
                         {passCount}/{Object.keys(CHECKS).length} passed
                     </p>
                 </div>
-                <span className="text-2xl font-bold" style={{ color: scoreColor }}>
-                    {score}<span className="text-sm text-slate-400">/100</span>
-                </span>
+                <div className="flex items-center gap-2">
+                    <span
+                        className="cursor-help text-xs text-slate-300/80"
+                        title="Technical score is calculated from pass/fail outcomes across core SEO, rendering, security headers, and performance checks."
+                        aria-label="How technical score is calculated"
+                    >
+                        ℹ
+                    </span>
+                    <span className="text-2xl font-bold" style={{ color: scoreColor }}>
+                        {score}<span className="text-sm text-slate-400">/100</span>
+                    </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">

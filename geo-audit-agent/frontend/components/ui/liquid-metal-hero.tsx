@@ -11,9 +11,9 @@ interface LiquidMetalHeroProps {
   badge?: string;
   title: string;
   subtitle: string;
-  primaryCtaLabel: string;
+  primaryCtaLabel?: string;
   secondaryCtaLabel?: string;
-  onPrimaryCtaClick: () => void;
+  onPrimaryCtaClick?: () => void;
   onSecondaryCtaClick?: () => void;
   className?: string;
 }
@@ -73,11 +73,13 @@ export default function LiquidMetalHero({
           </motion.div>
 
           <motion.div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row" variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
-            <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}>
-              <Button onClick={onPrimaryCtaClick} size="lg" className="bg-cyan-300 px-8 py-6 text-lg font-semibold text-slate-950 shadow-2xl transition-all duration-300 hover:bg-cyan-200">
-                {primaryCtaLabel}
-              </Button>
-            </motion.div>
+            {primaryCtaLabel && onPrimaryCtaClick && (
+              <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}>
+                <Button onClick={onPrimaryCtaClick} size="lg" className="bg-cyan-300 px-8 py-6 text-lg font-semibold text-slate-950 shadow-2xl transition-all duration-300 hover:bg-cyan-200">
+                  {primaryCtaLabel}
+                </Button>
+              </motion.div>
+            )}
 
             {secondaryCtaLabel && onSecondaryCtaClick && (
               <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}>

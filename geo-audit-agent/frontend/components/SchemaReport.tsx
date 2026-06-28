@@ -22,9 +22,23 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
 
   return (
     <div className="glass-panel rounded-2xl p-6">
-      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
-        {labels.title}
-      </h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+          {labels.title}
+        </h2>
+        <div className="flex items-center gap-2">
+          <span
+            className="cursor-help text-xs text-slate-300/80"
+            title="Schema metrics are based on JSON-LD detection, extracted schema types, and generated remediation recommendations."
+            aria-label="How schema metrics are calculated"
+          >
+            ℹ
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {found ? "found" : "missing"} · {types.length} types
+          </span>
+        </div>
+      </div>
 
       {/* JSON-LD status */}
       <div className="flex items-center gap-2 mb-4">
