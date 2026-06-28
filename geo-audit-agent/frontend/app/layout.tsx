@@ -1,4 +1,3 @@
-import ScifiBackground from "@/components/ScifiBackground";
 import { CopilotKit } from "@copilotkit/react-core";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -22,7 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme="dark">
       <body>
-        <ScifiBackground />
         <CopilotKit runtimeUrl="/api/copilotkit" agent="default" showDevConsole={false}>
           {children}
         </CopilotKit>

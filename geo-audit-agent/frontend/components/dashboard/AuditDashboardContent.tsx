@@ -12,8 +12,8 @@ import SchemaReport from "@/components/SchemaReport";
 import TechnicalChecksPanel from "@/components/TechnicalChecksPanel";
 import VerboseReportPanel from "@/components/VerboseReportPanel";
 import {
-  trackAuditCompleted,
-  trackReportViewed,
+    trackAuditCompleted,
+    trackReportViewed,
 } from "@/lib/analytics";
 import { GeoAuditState } from "@/lib/types";
 
@@ -32,9 +32,16 @@ type Props = {
   locale: AppLocale;
   text: DashboardText;
   defaultLlmsTxt: string;
+  showEmptyState?: boolean;
 };
 
-export default function AuditDashboardContent({ state, locale, text, defaultLlmsTxt }: Props) {
+export default function AuditDashboardContent({
+  state,
+  locale,
+  text,
+  defaultLlmsTxt,
+  showEmptyState = true,
+}: Props) {
   const isRunning = state.status === "fetching" || state.status === "analyzing";
   const hasReport = Boolean(state.report);
   const lastTrackedReportKey = useRef<string | null>(null);
@@ -166,17 +173,17 @@ export default function AuditDashboardContent({ state, locale, text, defaultLlms
       </AnimatePresence>
 
       <AnimatePresence initial={false} mode="wait">
-        {!isRunning && !hasReport && (
+        {showEmptyState && !isRunning && !hasReport && (
           <motion.div
             key="empty"
             initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
             transition={fadeUpTransition}
-            className="relative flex min-h-[26rem] flex-col py-2 lg:min-h-[38rem] lg:h-full"
+            className="relative flex min-h-[16rem] flex-col py-2 lg:min-h-[20rem]"
             aria-live="polite"
           >
-            <div className="h-[22rem] w-full rounded-2xl border border-cyan-300/10 bg-gradient-to-br from-slate-950/70 via-slate-900/55 to-slate-950/70 sm:h-[28rem] lg:h-[34rem] xl:h-[38rem]" aria-hidden="true" />
+            <div className="h-full min-h-[14rem] w-full rounded-2xl border border-cyan-300/10 bg-gradient-to-br from-slate-950/70 via-slate-900/55 to-slate-950/70 sm:min-h-[18rem] lg:min-h-[20rem]" aria-hidden="true" />
             <span className="sr-only">{text.noAuditTitle}. {text.noAuditBody}</span>
           </motion.div>
         )}

@@ -3,13 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --glass-bg: rgba(6, 10, 22, 0.44);
-  --glass-bg-strong: rgba(6, 10, 22, 0.62);
+  --glass-bg: rgba(2, 6, 23, 0.68);
+  --glass-bg-strong: rgba(2, 6, 23, 0.82);
   --glass-border: rgba(103, 232, 249, 0.18);
   --glass-shadow: 0 10px 40px rgba(2, 8, 23, 0.35);
   --accent-cyan: #67e8f9;
   --accent-teal: #2dd4bf;
   --accent-indigo: #818cf8;
+  --light-color: #67e8f9;
+  --glow-color-1: rgba(103, 232, 249, 0.8);
+  --glow-color-2: rgba(129, 140, 248, 0.6);
+  --background: 222 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --sky-300: 188 88% 69%;
+  --gray-300: 215 20% 65%;
 }
 
 /*
@@ -69,33 +76,6 @@ body {
   position: relative;
   min-height: 100vh;
   overflow-x: clip;
-}
-
-.app-shell::before,
-.app-shell::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  filter: blur(52px);
-  opacity: 0.5;
-}
-
-.app-shell::before {
-  width: 20rem;
-  height: 20rem;
-  border-radius: 999px;
-  top: -4rem;
-  right: -3rem;
-  background: linear-gradient(180deg, rgba(103, 232, 249, 0.6), rgba(45, 212, 191, 0.12));
-}
-
-.app-shell::after {
-  width: 17rem;
-  height: 17rem;
-  border-radius: 999px;
-  bottom: -3rem;
-  left: -2rem;
-  background: linear-gradient(180deg, rgba(129, 140, 248, 0.44), rgba(2, 8, 23, 0.1));
 }
 
 .glass-panel {
@@ -270,40 +250,156 @@ html body button[aria-label="Web Inspector"]+div {
   }
 }
 
-@keyframes holo-flicker {
+/* ───────────────────────────────────────────────────────────────
+   AURORA LIGHT BEAMS ANIMATIONS
+   ─────────────────────────────────────────────────────────────── */
 
+@keyframes rise {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  0%,100% {
+    opacity: 0;
+  }
+  5%,80% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes floorGlow {
+  0%,100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes mainGlow {
+  from {
+    opacity: 0.6;
+    filter: blur(25px);
+  }
+  to {
+    opacity: 0.8;
+    filter: blur(15px);
+  }
+}
+
+@keyframes moveGrid {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -80px -40px;
+  }
+}
+
+/* Scene base styles */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+.floor {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 60px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(103, 232, 249, 0.08), transparent 70%);
+  filter: blur(8px);
+  animation: floorGlow 4s ease-in-out infinite;
+}
+
+.main-column {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent 0%, rgba(103, 232, 249, 0.04) 50%, transparent 100%);
+  transform: translateX(-50%);
+}
+
+.light-stream-container {
+  position: absolute;
+  inset: 0;
+}
+
+.light-beam {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(103, 232, 249, 0) 0%, var(--light-color) 20%, var(--light-color) 50%, rgba(103, 232, 249, 0) 100%);
+  filter: blur(1px);
+  animation: rise var(--duration, 4.5s), fade var(--duration, 4.5s), drop 5s linear forwards;
+}
+
+@keyframes drop {
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes holo-flicker {
   0%,
   94%,
   100% {
     opacity: 1;
   }
-
   95% {
     opacity: 0.72;
   }
-
   97% {
     opacity: 1;
   }
-
   99% {
     opacity: 0.85;
   }
 }
 
 @keyframes pulse-dot {
-
   0%,
   100% {
     opacity: 1;
     transform: scale(1);
     box-shadow: 0 0 0 0 currentColor;
   }
-
   50% {
     opacity: 0.7;
     transform: scale(1.2);
     box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -713,4 +809,19 @@ html body button[aria-label="Web Inspector"]+div {
 
 .copilotKitMessage.copilotKitAssistantMessage a:hover {
   color: #a5f3fc !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-long {
+  animation: fadeIn 0.9s ease-out both;
 }

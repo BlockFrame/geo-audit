@@ -5,20 +5,15 @@ import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 import { Role, TextMessage } from "@copilotkit/runtime-client-gql";
 import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import LiquidMetalHero from "@/components/ui/liquid-metal-hero";
 import AuditDashboardContent from "@/components/dashboard/AuditDashboardContent";
 import MethodologyModal from "@/components/MethodologyModal";
 import { useGeoAuditCopilot } from "@/hooks/useGeoAuditCopilot";
 import { GeoAuditState, GeoReport } from "@/lib/types";
 
 type AppLocale = "it" | "en";
-
-const SOCIAL_LINKS = {
-  github: process.env.NEXT_PUBLIC_GITHUB_URL ?? process.env.NEXT_PUBLIC_DISCORD_URL ?? "https://github.com/BlockFrame/geo-audit",
-  linkedin: process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "https://www.linkedin.com/in/rossi-stefano/",
-  feedback: process.env.NEXT_PUBLIC_FEEDBACK_FORM_URL ?? "https://github.com/BlockFrame/geo-audit/issues/new",
-};
 
 const UI_TEXT: Record<AppLocale, {
   copilotReadable: string;
@@ -30,7 +25,6 @@ const UI_TEXT: Record<AppLocale, {
   heroEyebrow: string;
   heroTitle: string;
   heroBody: string;
-  subtitle: string;
   scoreLabel: string;
   runningPrefix: string;
   noAuditTitle: string;
@@ -43,7 +37,6 @@ const UI_TEXT: Record<AppLocale, {
   socialGithub: string;
   socialLinkedin: string;
   socialBug: string;
-  topBanner: string;
 }> = {
   it: {
     copilotReadable: "Current GEO audit state: URL, scores, and findings",
@@ -55,7 +48,6 @@ const UI_TEXT: Record<AppLocale, {
     heroEyebrow: "AI visibility command center",
     heroTitle: "GEO Audit Agent",
     heroBody: "Analizza subito come il tuo sito viene letto da motori generativi, crawler AI e layer semantici: un audit pensato per capire visibilita, citabilita e prontezza tecnica in pochi secondi.",
-    subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
     noAuditTitle: "No audit in progress",
@@ -71,8 +63,6 @@ const UI_TEXT: Record<AppLocale, {
     socialGithub: "GitHub",
     socialLinkedin: "LinkedIn",
     socialBug: "Feedback, bugs & feature requests",
-    topBanner:
-      "Language support is enabled. Language is selected automatically from your browser.",
   },
   en: {
     copilotReadable: "Current GEO audit state: URL, scores, and findings",
@@ -84,7 +74,6 @@ const UI_TEXT: Record<AppLocale, {
     heroEyebrow: "AI visibility command center",
     heroTitle: "GEO Audit Agent",
     heroBody: "Instantly inspect how your site is interpreted by generative engines, AI crawlers, and semantic layers, with an audit focused on visibility, citability, and technical readiness.",
-    subtitle: "Generative Engine Optimization experimental app · powered by LangGraph + CopilotKit",
     scoreLabel: "GEO Score",
     runningPrefix: "Analysis in progress",
     noAuditTitle: "No audit in progress",
@@ -100,8 +89,6 @@ const UI_TEXT: Record<AppLocale, {
     socialGithub: "GitHub",
     socialLinkedin: "LinkedIn",
     socialBug: "Feedback, bugs & feature requests",
-    topBanner:
-      "New: bilingual IT/EN support is enabled. Language is selected automatically from your browser.",
   },
 };
 
@@ -163,6 +150,7 @@ export default function Home() {
   const [directAuditState, setDirectAuditState] = useState<GeoAuditState | null>(null);
   const [directAuditError, setDirectAuditError] = useState<string | null>(null);
   const prefersReducedMotion = useReducedMotion();
+  const auditInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const nextLocale = detectLocale();
@@ -195,16 +183,12 @@ export default function Home() {
     };
 
     enhanceThirdPartyAccessibility();
-    const intervalId = window.setInterval(enhanceThirdPartyAccessibility, 500);
-
     const observer = new MutationObserver(() => {
       enhanceThirdPartyAccessibility();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-
     return () => {
-      window.clearInterval(intervalId);
       observer.disconnect();
     };
   }, []);
@@ -316,6 +300,9 @@ export default function Home() {
 
   const hasReport = Boolean(dashboardState.report);
   const showHeroLanding = !hasReport && !isDirectAuditRunning;
+  const focusAuditInput = () => {
+    auditInputRef.current?.focus();
+  };
 
   return (
     <>
@@ -324,221 +311,158 @@ export default function Home() {
         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:flex-row"
+        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:h-screen lg:flex-row lg:overflow-y-hidden"
       >
 
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
-        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
-          <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:flex-col">
-            {showHeroLanding && (
-              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.75rem] md:rounded-3xl" aria-hidden="true">
-                <motion.div
-                  className="absolute -top-24 left-[-12%] h-72 w-[72%] rounded-full bg-gradient-to-r from-violet-500/24 via-fuchsia-500/16 to-transparent blur-3xl"
-                  animate={prefersReducedMotion ? { opacity: 0.85 } : { x: [0, 26, -14, 0], y: [0, 12, -8, 0], opacity: [0.7, 0.95, 0.8, 0.7] }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 11, repeat: Infinity, ease: "easeInOut" }}
+        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
+          <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
+            {showHeroLanding ? (
+              <div className="flex flex-1 flex-col justify-center gap-4">
+                <LiquidMetalHero
+                  className="min-h-0 py-0"
+                  badge={t.heroEyebrow}
+                  title={t.heroTitle}
+                  subtitle={t.heroBody}
+                  primaryCtaLabel={locale === "it" ? "Inizia l'audit" : "Start audit"}
+                  secondaryCtaLabel="How KPIs are calculated"
+                  onPrimaryCtaClick={focusAuditInput}
+                  onSecondaryCtaClick={() => setShowMethodology(true)}
                 />
-                <motion.div
-                  className="absolute bottom-[-7rem] right-[-8%] h-80 w-[70%] rounded-full bg-gradient-to-l from-indigo-500/22 via-violet-500/14 to-transparent blur-3xl"
-                  animate={prefersReducedMotion ? { opacity: 0.82 } : { x: [0, -22, 12, 0], y: [0, -10, 7, 0], opacity: [0.72, 0.9, 0.78, 0.72] }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 12.5, repeat: Infinity, ease: "easeInOut", delay: 0.35 }}
-                />
+
+                <motion.form
+                  onSubmit={runDirectAudit}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-cyan-300/15 bg-slate-950/45 p-3 backdrop-blur-xl sm:flex-row sm:items-center"
+                  aria-describedby="audit-url-help"
+                >
+                  <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
+                  <input
+                    ref={auditInputRef}
+                    id="audit-url"
+                    type="text"
+                    inputMode="url"
+                    autoComplete="url"
+                    value={auditUrl}
+                    onChange={(event) => setAuditUrl(event.target.value)}
+                    placeholder="https://www.example.com"
+                    className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+                    aria-label="Website URL"
+                    aria-describedby="audit-url-help"
+                    aria-invalid={Boolean(directAuditError)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isDirectAuditRunning}
+                    className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
+                  </button>
+                  <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
+                </motion.form>
               </div>
-            )}
-            {/* Header */}
-            <motion.header
-              layout
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className={`mb-6 flex flex-col items-start gap-4 ${showHeroLanding ? "" : "sm:flex-row sm:items-start sm:justify-between"}`}
-            >
-              <div className="min-w-0 flex-1">
-                {showHeroLanding ? (
-                  <>
-                    <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.36em] text-cyan-200/75">{t.heroEyebrow}</p>
-                    <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl xl:text-[4.5rem] xl:leading-[0.94]">{t.heroTitle}</h1>
-                    <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300/82 sm:text-lg">{t.heroBody}</p>
-                    <div className="mt-5 flex flex-wrap items-center gap-2">
-                      <a
-                        href={SOCIAL_LINKS.github}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                        aria-label={t.socialGithub}
-                        title={t.socialGithub}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.77.5 12.27c0 5.2 3.3 9.6 7.88 11.16.58.11.79-.26.79-.58 0-.28-.01-1.2-.02-2.17-3.2.71-3.88-1.39-3.88-1.39-.52-1.36-1.28-1.72-1.28-1.72-1.05-.74.08-.72.08-.72 1.16.08 1.77 1.23 1.77 1.23 1.03 1.82 2.7 1.29 3.36.99.1-.77.4-1.3.73-1.6-2.55-.3-5.24-1.31-5.24-5.84 0-1.29.45-2.35 1.19-3.18-.12-.3-.52-1.51.11-3.15 0 0 .97-.32 3.19 1.21a10.8 10.8 0 0 1 5.81 0c2.22-1.53 3.19-1.21 3.19-1.21.63 1.64.23 2.85.11 3.15.74.83 1.19 1.89 1.19 3.18 0 4.54-2.69 5.53-5.26 5.83.41.37.78 1.1.78 2.23 0 1.61-.01 2.91-.01 3.31 0 .32.21.7.8.58 4.57-1.57 7.86-5.97 7.86-11.16C23.5 5.77 18.35.5 12 .5Z" /></svg>
-                          {t.socialGithub}
-                        </span>
-                      </a>
-                      <a
-                        href={SOCIAL_LINKS.linkedin}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                        aria-label={t.socialLinkedin}
-                        title={t.socialLinkedin}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A1.97 1.97 0 0 0 3.28 4.97c0 1.09.88 1.97 1.97 1.97s1.97-.88 1.97-1.97A1.97 1.97 0 0 0 5.25 3ZM20.72 12.72c0-2.84-1.52-4.16-3.55-4.16-1.63 0-2.36.9-2.77 1.53V8.5H11V20h3.4v-5.7c0-1.5.28-2.95 2.14-2.95 1.83 0 1.86 1.72 1.86 3.05V20H22v-7.28Z" /></svg>
-                          {t.socialLinkedin}
-                        </span>
-                      </a>
-                      <a
-                        href={SOCIAL_LINKS.feedback}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-rose-100"
-                        aria-label={t.socialBug}
-                        title={t.socialBug}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M8 2h8l1 3h2v2h-2.1l-.9 10a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.1 7H5V5h2l1-3Zm2.2 3h3.6l-.34-1H10.5l-.3 1ZM9 21h6" /><path d="M12 9v6M9.5 11h5" /></svg>
-                          {t.socialBug}
-                        </span>
-                      </a>
-                    </div>
-                  </>
-                ) : (
-                  <>
+            ) : (
+              <>
+                <motion.header
+                  layout
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between"
+                >
+                  <div className="min-w-0 flex-1">
                     <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.32em] text-cyan-200/70">{t.heroEyebrow}</p>
                     <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">{t.heroTitle}</h1>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300/82 sm:text-base">
                       {t.heroBody}
                     </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <a
-                        href={SOCIAL_LINKS.github}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                        aria-label={t.socialGithub}
-                        title={t.socialGithub}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.77.5 12.27c0 5.2 3.3 9.6 7.88 11.16.58.11.79-.26.79-.58 0-.28-.01-1.2-.02-2.17-3.2.71-3.88-1.39-3.88-1.39-.52-1.36-1.28-1.72-1.28-1.72-1.05-.74.08-.72.08-.72 1.16.08 1.77 1.23 1.77 1.23 1.03 1.82 2.7 1.29 3.36.99.1-.77.4-1.3.73-1.6-2.55-.3-5.24-1.31-5.24-5.84 0-1.29.45-2.35 1.19-3.18-.12-.3-.52-1.51.11-3.15 0 0 .97-.32 3.19 1.21a10.8 10.8 0 0 1 5.81 0c2.22-1.53 3.19-1.21 3.19-1.21.63 1.64.23 2.85.11 3.15.74.83 1.19 1.89 1.19 3.18 0 4.54-2.69 5.53-5.26 5.83.41.37.78 1.1.78 2.23 0 1.61-.01 2.91-.01 3.31 0 .32.21.7.8.58 4.57-1.57 7.86-5.97 7.86-11.16C23.5 5.77 18.35.5 12 .5Z" /></svg>
-                          {t.socialGithub}
-                        </span>
-                      </a>
-                      <a
-                        href={SOCIAL_LINKS.linkedin}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                        aria-label={t.socialLinkedin}
-                        title={t.socialLinkedin}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A1.97 1.97 0 0 0 3.28 4.97c0 1.09.88 1.97 1.97 1.97s1.97-.88 1.97-1.97A1.97 1.97 0 0 0 5.25 3ZM20.72 12.72c0-2.84-1.52-4.16-3.55-4.16-1.63 0-2.36.9-2.77 1.53V8.5H11V20h3.4v-5.7c0-1.5.28-2.95 2.14-2.95 1.83 0 1.86 1.72 1.86 3.05V20H22v-7.28Z" /></svg>
-                          {t.socialLinkedin}
-                        </span>
-                      </a>
-                      <a
-                        href={SOCIAL_LINKS.feedback}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-rose-100"
-                        aria-label={t.socialBug}
-                        title={t.socialBug}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M8 2h8l1 3h2v2h-2.1l-.9 10a2 2 0 0 1-2 1.8H10a2 2 0 0 1-2-1.8L7.1 7H5V5h2l1-3Zm2.2 3h3.6l-.34-1H10.5l-.3 1ZM9 21h6" /><path d="M12 9v6M9.5 11h5" /></svg>
-                          {t.socialBug}
-                        </span>
-                      </a>
-                    </div>
-                    <button
-                      onClick={() => setShowMethodology(true)}
-                      className="mt-2 inline-flex items-center gap-1.5 glass-chip social-chip rounded-lg px-2.5 py-1.5 text-xs text-cyan-300"
-                      aria-label="How KPIs are calculated"
+                  </div>
+                  {hasReport && dashboardState.geo_score !== undefined && (
+                    <motion.div
+                      layout
+                      initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="w-full self-stretch text-left glass-chip score-badge-hover glow-pulse rounded-xl px-3 py-2 sm:w-auto sm:self-start sm:text-right"
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-                      How KPIs are calculated
-                    </button>
-                  </>
-                )}
-              </div>
-              {hasReport && dashboardState.geo_score !== undefined && (
-                <motion.div
-                  layout
-                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full self-stretch text-left glass-chip score-badge-hover glow-pulse rounded-xl px-3 py-2 sm:w-auto sm:self-start sm:text-right"
+                      <p className="text-[11px] text-slate-300/80 uppercase tracking-wider">{t.scoreLabel}</p>
+                      <p
+                        className="text-3xl font-bold"
+                        style={{
+                          color: (dashboardState.geo_score ?? 0) >= 70 ? "#2dd4bf"
+                            : (dashboardState.geo_score ?? 0) >= 45 ? "#fbbf24"
+                              : "#fb7185",
+                        }}
+                      >
+                        {dashboardState.geo_score}<span className="text-lg text-slate-400">/100</span>
+                      </p>
+                    </motion.div>
+                  )}
+                </motion.header>
+
+                <motion.form
+                  onSubmit={runDirectAudit}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative z-10 mb-5 flex flex-col gap-2 rounded-xl border border-cyan-300/15 bg-cyan-300/5 p-3 sm:flex-row sm:items-center"
+                  aria-describedby="audit-url-help"
                 >
-                  <p className="text-[11px] text-slate-300/80 uppercase tracking-wider">{t.scoreLabel}</p>
-                  <p
-                    className="text-3xl font-bold"
-                    style={{
-                      color: (dashboardState.geo_score ?? 0) >= 70 ? "#2dd4bf"
-                        : (dashboardState.geo_score ?? 0) >= 45 ? "#fbbf24"
-                          : "#fb7185",
-                    }}
+                  <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
+                  <input
+                    ref={auditInputRef}
+                    id="audit-url"
+                    type="text"
+                    inputMode="url"
+                    autoComplete="url"
+                    value={auditUrl}
+                    onChange={(event) => setAuditUrl(event.target.value)}
+                    placeholder="https://www.example.com"
+                    className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+                    aria-label="Website URL"
+                    aria-describedby="audit-url-help"
+                    aria-invalid={Boolean(directAuditError)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isDirectAuditRunning}
+                    className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {dashboardState.geo_score}<span className="text-lg text-slate-400">/100</span>
-                  </p>
-                </motion.div>
-              )}
-            </motion.header>
+                    {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
+                  </button>
+                  <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
+                </motion.form>
+                {directAuditError && (
+                  <motion.div
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                    className="mb-5 rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-sm text-rose-100"
+                    role="alert"
+                  >
+                    {directAuditError}
+                  </motion.div>
+                )}
 
-            <motion.form
-              onSubmit={runDirectAudit}
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative z-10 mb-5 flex flex-col gap-2 rounded-xl border border-cyan-300/15 p-3 sm:flex-row sm:items-center ${showHeroLanding ? "bg-slate-950/45 backdrop-blur-xl" : "bg-cyan-300/5"}`}
-              aria-describedby="audit-url-help"
-            >
-              <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
-              <input
-                id="audit-url"
-                type="text"
-                inputMode="url"
-                autoComplete="url"
-                value={auditUrl}
-                onChange={(event) => setAuditUrl(event.target.value)}
-                placeholder="https://www.example.com"
-                className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
-                aria-label="Website URL"
-                aria-describedby="audit-url-help"
-                aria-invalid={Boolean(directAuditError)}
-              />
-              <button
-                type="submit"
-                disabled={isDirectAuditRunning}
-                className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
-              </button>
-              <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
-            </motion.form>
-            {directAuditError && (
-              <motion.div
-                initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                className="mb-5 rounded-lg border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-sm text-rose-100"
-                role="alert"
-              >
-                {directAuditError}
-              </motion.div>
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                  <AuditDashboardContent
+                    state={dashboardState}
+                    locale={locale}
+                    text={{
+                      runningPrefix: t.runningPrefix,
+                      noAuditTitle: t.noAuditTitle,
+                      noAuditBody: t.noAuditBody,
+                      samplePrompt1: t.samplePrompt1,
+                      samplePrompt2: t.samplePrompt2,
+                    }}
+                    defaultLlmsTxt={DEFAULT_LLMS_TXT[locale]}
+                    showEmptyState={false}
+                  />
+                </div>
+              </>
             )}
-
-            <div className="flex-1 min-h-0">
-              <AuditDashboardContent
-                state={dashboardState}
-                locale={locale}
-                text={{
-                  runningPrefix: t.runningPrefix,
-                  noAuditTitle: t.noAuditTitle,
-                  noAuditBody: t.noAuditBody,
-                  samplePrompt1: t.samplePrompt1,
-                  samplePrompt2: t.samplePrompt2,
-                }}
-                defaultLlmsTxt={DEFAULT_LLMS_TXT[locale]}
-              />
-            </div>
           </motion.div>
         </motion.main>
 
@@ -554,14 +478,18 @@ export default function Home() {
           initial={prefersReducedMotion ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full shrink-0 p-4 pt-0 sm:px-5 md:px-7 md:pb-7 lg:w-[26rem] lg:p-5 xl:w-[28rem]"
+          className="w-full shrink-0 p-4 pt-0 sm:px-5 md:px-7 md:pb-7 lg:h-full lg:min-h-0 lg:w-[26rem] lg:p-7 xl:w-[28rem]"
           aria-label="GEO audit chat assistant"
         >
           <motion.div layout className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">
             <div className="mx-3 mt-3 mb-2 rounded-2xl border border-white/6 bg-white/[0.03] px-3 py-3 backdrop-blur-xl">
               <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-cyan-200/80">Conversation console</p>
               <p className="mt-1 text-sm leading-6 text-slate-300/78">Paste a full URL or ask for a GEO audit to start the analysis flow from chat.</p>
-              <div className="mt-2 rounded-xl border border-amber-300/18 bg-amber-200/8 px-2.5 py-2 text-[11px] leading-relaxed text-amber-100/88">
+              <div
+                className="mt-2 rounded-xl border border-amber-300/18 bg-amber-200/8 px-2.5 py-2 text-[11px] leading-relaxed text-amber-100/88"
+                role="note"
+                aria-label="AI disclosure notice"
+              >
                 {t.aiActLabel}
               </div>
             </div>

@@ -1,8 +1,9 @@
 import os
 import json
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", encoding="utf-8-sig")
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -119,3 +120,8 @@ def run_audit(request: AuditRequest):
         return json.loads(compile_geo_report.invoke({"url": request.url}))
     except Exception as exc:
         raise HTTPException(status_code=502, detail="Audit execution failed") from exc
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
