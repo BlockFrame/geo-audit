@@ -36,7 +36,7 @@ export function GenerativeArtScene({ reducedMotion = false }: GenerativeArtScene
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelRatioCap));
     currentMount.appendChild(renderer.domElement);
 
-    const geometry = new THREE.IcosahedronGeometry(1.2, detail);
+    const geometry = new THREE.IcosahedronGeometry(1.45, detail);
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
@@ -98,7 +98,7 @@ export function GenerativeArtScene({ reducedMotion = false }: GenerativeArtScene
         void main() {
           vNormal = normal;
           vPosition = position;
-          float displacement = snoise(position * 2.0 + time * 0.5) * 0.2;
+          float displacement = snoise(position * 2.0 + time * 0.5) * 0.24;
           vec3 newPosition = position + normal * displacement;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
         }

@@ -63,11 +63,11 @@ export default function LiquidMetalHero({
             className="relative w-full max-w-5xl"
             variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
           >
-            <motion.h1 role="heading" aria-level={1} className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-7xl xl:text-8xl">
+            <motion.h1 role="heading" aria-level={1} className="pb-1 text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-7xl xl:text-8xl">
               {title}
             </motion.h1>
 
-            <motion.p className="mx-auto max-w-3xl text-lg leading-relaxed text-slate-200/90 sm:text-xl lg:text-2xl">
+            <motion.p className="mx-auto mt-2 max-w-3xl text-lg leading-relaxed text-slate-200/90 sm:text-xl lg:text-2xl">
               {subtitle}
             </motion.p>
           </motion.div>
