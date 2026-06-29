@@ -1,5 +1,6 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
 import { Recommendation } from "@/lib/types";
 
 type Props = { recommendations: Recommendation[]; locale?: "it" | "en" };
@@ -60,13 +61,10 @@ export default function ActionPlanCards({ recommendations, locale = "en" }: Prop
           {labels.title}
         </h2>
         <div className="flex items-center gap-2">
-          <span
-            className="cursor-help text-xs text-slate-300/80"
-            title="Action plan is prioritized from report recommendations using priority, impact, and effort metadata."
-            aria-label="How action plan metrics are calculated"
-          >
-            ℹ
-          </span>
+          <ExplainabilityHint
+            label="How action plan metrics are calculated"
+            description="Action plan is prioritized from report recommendations using priority, impact, and effort metadata."
+          />
           <span className="text-[11px] text-slate-400">
             {criticalCount} critical · {highCount} high
           </span>

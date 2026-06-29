@@ -1,8 +1,9 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
+
 type Props = {
     score: number;
-    verdict?: "high" | "medium" | "low" | null;
     details?: Record<string, number> | null;
     locale?: "it" | "en";
 };
@@ -16,25 +17,14 @@ const SUB_LABELS: Record<string, { en: string; desc_en: string }> = {
     unique_data: { en: "Unique data", desc_en: "Original statistics" },
 };
 
-const VERDICT_STYLE: Record<string, string> = {
-    high: "bg-emerald-400/20 text-emerald-100 border-emerald-300/35",
-    medium: "bg-amber-400/20 text-amber-100 border-amber-300/35",
-    low: "bg-rose-400/20 text-rose-100 border-rose-300/35",
-};
-
 const BAR_COLOR = (v: number) =>
     v >= 7 ? "#2dd4bf" : v >= 4 ? "#fbbf24" : "#fb7185";
 
 const SCORE_COLOR = (s: number) =>
     s >= 70 ? "#2dd4bf" : s >= 40 ? "#fbbf24" : "#fb7185";
 
-export default function CitabilityPanel({ score, verdict, details, locale = "en" }: Props) {
+export default function CitabilityPanel({ score, details, locale = "en" }: Props) {
     const entries = details ? Object.entries(details) : [];
-    const verdictLabel: Record<string, string> = {
-        high: "High citability",
-        medium: "Medium citability",
-        low: "Low citability",
-    };
 
     return (
         <div className="glass-panel rounded-2xl p-6">
@@ -49,21 +39,13 @@ export default function CitabilityPanel({ score, verdict, details, locale = "en"
                     </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                    <span
-                        className="cursor-help text-xs text-slate-300/80"
-                        title="Citability is computed from sub-metrics: answer passages, factual density, authority signals, content length, structure, and unique data."
-                        aria-label="How citability score is calculated"
-                    >
-                        ℹ
-                    </span>
+                    <ExplainabilityHint
+                        label="How citability score is calculated"
+                        description={`Weighted citability score from six 0-10 sub-signals: answer passages 25%, factual density 20%, authority signals 20%, content length 15%, structured content 10%, and unique data 10%. Current report value: ${score}/100.`}
+                    />
                     <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
                         {score}<span className="text-sm text-slate-400">/100</span>
                     </span>
-                    {verdict && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded border ${VERDICT_STYLE[verdict] ?? ""}`}>
-                            {verdictLabel[verdict] ?? verdict}
-                        </span>
-                    )}
                 </div>
             </div>
 

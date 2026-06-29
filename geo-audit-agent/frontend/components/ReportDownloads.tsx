@@ -111,12 +111,12 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-4">
+    <div className="glass-panel-strong flex h-full flex-col rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs text-slate-300/80 uppercase tracking-wider">{labels.reportTitle}</p>
-          <h2 className="mt-1 text-sm font-semibold text-slate-100">{labels.exportTitle}</h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <h2 className="mt-1 text-lg font-semibold text-slate-100">{labels.exportTitle}</h2>
+          <p className="mt-1 max-w-md text-sm text-slate-400">
             {labels.exportBody}
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2">
         <label className="min-w-[170px] flex-1">
           <span className="mb-1 block text-[10px] uppercase tracking-wider text-slate-400">{labels.audience}</span>
           <select
@@ -178,7 +178,7 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
         </label>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2">
         {(["md", "pdf"] as const).map((format) => (
           <button
             key={format}

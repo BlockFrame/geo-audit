@@ -390,64 +390,68 @@ export default function Home() {
         <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
             {showHeroLanding ? (
-              <div className="relative flex flex-1 flex-col justify-center gap-4 pb-20">
-                <LiquidMetalHero
-                  className="min-h-0 py-0"
-                  badge={t.heroEyebrow}
-                  title={t.heroTitle}
-                  subtitle={t.heroBody}
-                  secondaryCtaLabel="How KPIs are calculated"
-                  onSecondaryCtaClick={() => setShowMethodology(true)}
-                />
-
-                <motion.form
-                  onSubmit={runDirectAudit}
-                  initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-cyan-300/15 bg-slate-950/45 p-3 backdrop-blur-xl sm:flex-row sm:items-center"
-                  aria-describedby="audit-url-help"
-                >
-                  <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
-                  <input
-                    ref={auditInputRef}
-                    id="audit-url"
-                    type="text"
-                    inputMode="url"
-                    autoComplete="url"
-                    value={auditUrl}
-                    onChange={(event) => setAuditUrl(event.target.value)}
-                    placeholder="https://www.example.com"
-                    className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
-                    aria-label="Website URL"
-                    aria-describedby="audit-url-help"
-                    aria-invalid={Boolean(directAuditError)}
+              <div className="relative flex flex-1 min-h-0 flex-col pb-16">
+                <div className="flex flex-1 flex-col justify-center gap-4">
+                  <LiquidMetalHero
+                    className="min-h-0 py-0"
+                    badge={t.heroEyebrow}
+                    title={t.heroTitle}
+                    subtitle={t.heroBody}
+                    secondaryCtaLabel="How KPIs are calculated"
+                    onSecondaryCtaClick={() => setShowMethodology(true)}
                   />
-                  <button
-                    type="submit"
-                    disabled={isDirectAuditRunning}
-                    className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+
+                  <motion.form
+                    onSubmit={runDirectAudit}
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-cyan-300/15 bg-slate-950/45 p-3 backdrop-blur-xl sm:flex-row sm:items-center"
+                    aria-describedby="audit-url-help"
                   >
-                    {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
-                  </button>
-                  <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
-                </motion.form>
-                <div className="relative z-10 mx-auto mt-2 flex w-full max-w-2xl flex-wrap items-center justify-center gap-x-2 gap-y-2 text-xs text-slate-300/85 sm:gap-x-3">
-                  {socialLinks.map((link) => (
-                    <a
-                      key={link.key}
-                      href={link.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="social-chip min-h-8 rounded-full border border-slate-500/35 px-3 py-1.5 transition hover:border-cyan-300/55 hover:text-cyan-100"
+                    <label htmlFor="audit-url" className="sr-only">Website URL to audit</label>
+                    <input
+                      ref={auditInputRef}
+                      id="audit-url"
+                      type="text"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={auditUrl}
+                      onChange={(event) => setAuditUrl(event.target.value)}
+                      placeholder="https://www.example.com"
+                      className="min-h-10 flex-1 rounded-lg border border-white/10 bg-slate-950/60 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-300/60"
+                      aria-label="Website URL"
+                      aria-describedby="audit-url-help"
+                      aria-invalid={Boolean(directAuditError)}
+                    />
+                    <button
+                      type="submit"
+                      disabled={isDirectAuditRunning}
+                      className="min-h-10 rounded-lg bg-cyan-300 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {link.label}
-                    </a>
-                  ))}
+                      {isDirectAuditRunning ? "Analyzing..." : "Run audit"}
+                    </button>
+                    <p id="audit-url-help" className="sr-only">Enter a public website URL or domain, then run a GEO audit.</p>
+                  </motion.form>
+                  <div className="relative z-10 mx-auto mt-2 flex w-full max-w-2xl flex-wrap items-center justify-center gap-x-2 gap-y-2 text-xs text-slate-300/85 sm:gap-x-3">
+                    {socialLinks.map((link) => (
+                      <a
+                        key={link.key}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="social-chip min-h-8 rounded-full border border-slate-500/35 px-3 py-1.5 transition hover:border-cyan-300/55 hover:text-cyan-100"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <p className="poweredBy absolute bottom-4 left-1/2 z-10 w-[min(92%,42rem)] -translate-x-1/2 rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
-                  {t.betaFooter}
-                </p>
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center">
+                  <p className="poweredBy pointer-events-auto w-[min(92%,42rem)] rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
+                    {t.betaFooter}
+                  </p>
+                </div>
               </div>
             ) : (
               <>
@@ -546,7 +550,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-16">
                   <AuditDashboardContent
                     state={dashboardState}
                     locale={locale}
@@ -561,9 +565,11 @@ export default function Home() {
                     showEmptyState={false}
                   />
                 </div>
-                <p className="poweredBy mt-auto pt-3 rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
-                  {t.betaFooter}
-                </p>
+                <div className="pointer-events-none absolute inset-x-0 bottom-7 z-10 flex justify-center px-4 sm:px-5 md:px-7">
+                  <p className="poweredBy pointer-events-auto w-full max-w-2xl rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
+                    {t.betaFooter}
+                  </p>
+                </div>
               </>
             )}
           </motion.div>

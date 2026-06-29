@@ -1,5 +1,6 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
 import { TechnicalAudit } from "@/lib/types";
 
 type Props = { audit: TechnicalAudit; locale?: "it" | "en" };
@@ -90,13 +91,10 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span
-                        className="cursor-help text-xs text-slate-300/80"
-                        title="Technical score is calculated from pass/fail outcomes across core SEO, rendering, security headers, and performance checks."
-                        aria-label="How technical score is calculated"
-                    >
-                        ℹ
-                    </span>
+                    <ExplainabilityHint
+                        label="How technical score is calculated"
+                        description="Technical score from weighted checks: HTTPS 10, viewport 8, canonical 8, lang 5, indexable 12, sitemap 5, H1 up to 8, security headers up to 10, SSR up to 15, CLS stability 5, and IndexNow 5. Total is capped at 100."
+                    />
                     <span className="text-2xl font-bold" style={{ color: scoreColor }}>
                         {score}<span className="text-sm text-slate-400">/100</span>
                     </span>

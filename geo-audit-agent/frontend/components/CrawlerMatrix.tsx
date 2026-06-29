@@ -1,5 +1,6 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
 import { CrawlerInfo } from "@/lib/types";
 
 type Props = { crawlers: CrawlerInfo[]; locale?: "it" | "en" };
@@ -52,13 +53,10 @@ export default function CrawlerMatrix({ crawlers, locale = "en" }: Props) {
           {tableText.title}
         </h2>
         <div className="flex items-center gap-2">
-          <span
-            className="cursor-help text-xs text-slate-300/80"
-            title="Crawler matrix metrics are computed from robots.txt access states per crawler: allowed, partial, blocked, and explicit configuration coverage."
-            aria-label="How crawler metrics are calculated"
-          >
-            ℹ
-          </span>
+          <ExplainabilityHint
+            label="How crawler metrics are calculated"
+            description="Crawler matrix metrics are computed from robots.txt access states per crawler: allowed, partial, blocked, and explicit configuration coverage."
+          />
           <span className={`text-xs px-2 py-1 rounded glass-chip ${configured === 0 ? "text-amber-200" : "text-emerald-200"}`}>
             {configured}/{crawlers.length} {tableText.configured}
           </span>

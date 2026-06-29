@@ -1,5 +1,6 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
 import { BrandMentions, ContentQuality } from "@/lib/types";
 
 type Props = {
@@ -31,12 +32,10 @@ const EEAT_LABELS: Record<string, { en: string }> = {
     source_signal: { en: "Source citations" },
 };
 
-const SCORE_COLOR = (s: number) =>
-    s >= 70 ? "#2dd4bf" : s >= 40 ? "#fbbf24" : "#fb7185";
-
 export default function BrandPresencePanel({ brand, content, locale = "en" }: Props) {
     const presence = brand?.platform_presence ?? {};
-    const score = brand?.score ?? 0;
+    const brandScore = brand?.score;
+    const contentScore = content?.score;
     const eeat = content?.eeat_signals ?? {};
     const wordCount = content?.word_count;
     const eeatCount = Object.values(eeat).filter(Boolean).length;
@@ -55,16 +54,20 @@ export default function BrandPresencePanel({ brand, content, locale = "en" }: Pr
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span
-                        className="cursor-help text-xs text-slate-300/80"
-                        title="Brand/content score comes from platform presence signals plus E-E-A-T indicators and content depth provided in the report."
-                        aria-label="How brand and content score is calculated"
-                    >
-                        ℹ
-                    </span>
-                    <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
-                        {score}<span className="text-sm text-slate-400">/100</span>
-                    </span>
+                    <ExplainabilityHint
+                        label="How brand and content score is calculated"
+                        description="Brand/content score comes from platform presence signals plus E-E-A-T indicators and content depth provided in the report."
+                    />
+                    {typeof contentScore === "number" && (
+                        <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
+                            Content {contentScore}/100
+                        </span>
+                    )}
+                    {typeof brandScore === "number" && (
+                        <span className="rounded-lg border border-slate-400/25 bg-slate-500/10 px-2 py-1 text-xs font-semibold text-slate-200">
+                            Brand {brandScore}/100
+                        </span>
+                    )}
                 </div>
             </div>
 

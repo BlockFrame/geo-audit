@@ -1,5 +1,7 @@
 "use client";
 
+import ExplainabilityHint from "@/components/ui/explainability-hint";
+
 type Props = {
   found: boolean;
   types: string[];
@@ -27,13 +29,10 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
           {labels.title}
         </h2>
         <div className="flex items-center gap-2">
-          <span
-            className="cursor-help text-xs text-slate-300/80"
-            title="Schema metrics are based on JSON-LD detection, extracted schema types, and generated remediation recommendations."
-            aria-label="How schema metrics are calculated"
-          >
-            ℹ
-          </span>
+          <ExplainabilityHint
+            label="How schema metrics are calculated"
+            description="Schema metrics are based on JSON-LD detection, extracted schema types, and generated remediation recommendations."
+          />
           <span className="text-[11px] text-slate-400">
             {found ? "found" : "missing"} · {types.length} types
           </span>
