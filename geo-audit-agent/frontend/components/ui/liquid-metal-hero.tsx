@@ -2,9 +2,9 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 
+import { GenerativeArtScene } from "@/components/ui/anomalous-matter-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GenerativeArtScene } from "@/components/ui/anomalous-matter-hero";
 import { cn } from "@/lib/utils";
 
 interface LiquidMetalHeroProps {
@@ -63,16 +63,16 @@ export default function LiquidMetalHero({
             className="relative w-full max-w-5xl"
             variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
           >
-            <motion.h1 role="heading" aria-level={1} className="pb-1 text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-7xl xl:text-8xl">
+            <motion.h1 role="heading" aria-level={1} className="pb-1 text-4xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
               {title}
             </motion.h1>
 
-            <motion.p className="mx-auto mt-2 max-w-3xl text-lg leading-relaxed text-slate-200/90 sm:text-xl lg:text-2xl">
+            <motion.p className="mx-auto mt-2 max-w-3xl text-lg leading-relaxed text-slate-200/90 sm:text-xl lg:text-xl xl:text-2xl">
               {subtitle}
             </motion.p>
           </motion.div>
 
-          <motion.div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row" variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
+          <motion.div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row lg:mt-4" variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}>
             {primaryCtaLabel && onPrimaryCtaClick && (
               <motion.div whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }} whileTap={prefersReducedMotion ? undefined : { scale: 0.96 }}>
                 <Button onClick={onPrimaryCtaClick} size="lg" className="bg-cyan-300 px-8 py-6 text-lg font-semibold text-slate-950 shadow-2xl transition-all duration-300 hover:bg-cyan-200">
@@ -91,7 +91,7 @@ export default function LiquidMetalHero({
           </motion.div>
 
           <motion.div
-            className="mt-8 flex w-full max-w-2xl items-center justify-center gap-2 text-[11px] uppercase tracking-[0.28em] text-cyan-100/70"
+            className="mt-6 flex w-full max-w-2xl items-center justify-center gap-2 text-[11px] uppercase tracking-[0.28em] text-cyan-100/70 lg:mt-5"
             variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}
             aria-hidden="true"
           >

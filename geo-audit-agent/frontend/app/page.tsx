@@ -390,7 +390,7 @@ export default function Home() {
         <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
             {showHeroLanding ? (
-            <div className="relative flex flex-1 min-h-0 flex-col overflow-y-auto pb-12 pr-1 sm:pb-16">
+            <div className="relative flex flex-1 min-h-0 flex-col overflow-y-auto pb-4 pr-1 sm:pb-6 lg:overflow-hidden lg:pr-0">
               <div className="flex flex-1 flex-col justify-start gap-4 pt-2 sm:pt-4 lg:justify-center">
                   <LiquidMetalHero
                     className="min-h-0 py-0"
@@ -446,11 +446,6 @@ export default function Home() {
                       </a>
                     ))}
                   </div>
-                </div>
-                <div className="pointer-events-none relative mt-4 flex justify-center sm:absolute sm:inset-x-0 sm:bottom-0 sm:mt-0">
-                  <p className="poweredBy pointer-events-auto w-[min(92%,42rem)] rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
-                    {t.betaFooter}
-                  </p>
                 </div>
               </div>
             ) : (
@@ -550,7 +545,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-16">
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
                   <AuditDashboardContent
                     state={dashboardState}
                     locale={locale}
@@ -564,11 +559,6 @@ export default function Home() {
                     defaultLlmsTxt={DEFAULT_LLMS_TXT[locale]}
                     showEmptyState={false}
                   />
-                </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-7 z-10 flex justify-center px-4 sm:px-5 md:px-7">
-                  <p className="poweredBy pointer-events-auto w-full max-w-2xl rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
-                    {t.betaFooter}
-                  </p>
                 </div>
               </>
             )}
@@ -613,6 +603,11 @@ export default function Home() {
           </motion.div>
         </motion.aside>
       </motion.div>
+      <footer className="pointer-events-none fixed inset-x-0 bottom-2 z-30 flex justify-center px-4">
+        <p className="w-[min(94%,52rem)] rounded-xl border border-slate-500/35 bg-slate-950/75 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 backdrop-blur-md sm:text-[11px]">
+          {t.betaFooter}
+        </p>
+      </footer>
     </>
   );
 }
