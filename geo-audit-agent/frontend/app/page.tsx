@@ -390,8 +390,8 @@ export default function Home() {
         <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
             {showHeroLanding ? (
-              <div className="relative flex flex-1 min-h-0 flex-col pb-16">
-                <div className="flex flex-1 flex-col justify-center gap-4">
+            <div className="relative flex flex-1 min-h-0 flex-col overflow-y-auto pb-12 pr-1 sm:pb-16">
+              <div className="flex flex-1 flex-col justify-start gap-4 pt-2 sm:pt-4 lg:justify-center">
                   <LiquidMetalHero
                     className="min-h-0 py-0"
                     badge={t.heroEyebrow}
@@ -447,7 +447,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center">
+                <div className="pointer-events-none relative mt-4 flex justify-center sm:absolute sm:inset-x-0 sm:bottom-0 sm:mt-0">
                   <p className="poweredBy pointer-events-auto w-[min(92%,42rem)] rounded-xl border border-slate-500/35 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 sm:text-[11px]">
                     {t.betaFooter}
                   </p>
