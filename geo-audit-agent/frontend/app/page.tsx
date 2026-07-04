@@ -379,20 +379,20 @@ export default function Home() {
   return (
     <>
       <a href="#main-dashboard" className="skip-link">Skip to audit dashboard</a>
-      <div className="flex h-screen min-h-screen flex-col overflow-hidden">
+      <div className="flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="flex h-full min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-hidden text-slate-100 lg:flex-row"
+        className="flex flex-col overflow-x-hidden text-slate-100 lg:h-full lg:min-h-0 lg:flex-1 lg:flex-row lg:overflow-y-hidden"
       >
 
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
-        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 pb-2 sm:p-5 sm:pb-2 md:px-7 md:pt-7 md:pb-3 lg:h-full lg:min-h-0 lg:px-7 lg:pt-7 lg:pb-3" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
-          <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
+        <motion.main id="main-dashboard" className="min-w-0 flex flex-col p-4 pb-2 sm:p-5 sm:pb-2 md:px-7 md:pt-7 md:pb-3 lg:h-full lg:min-h-0 lg:flex-1 lg:px-7 lg:pt-7 lg:pb-3" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
+          <motion.div layout className="glass-panel relative flex w-full flex-col rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0">
             {showHeroLanding ? (
-            <div className="relative flex flex-1 min-h-0 flex-col overflow-y-auto pb-4 pr-1 sm:pb-6 lg:overflow-hidden lg:pr-0">
-              <div className="flex flex-1 flex-col justify-start gap-4 pt-2 sm:pt-4 lg:justify-center">
+            <div className="relative flex flex-col overflow-y-auto pb-4 pr-1 sm:pb-6 lg:min-h-0 lg:flex-1 lg:overflow-hidden lg:pr-0">
+              <div className="flex flex-col justify-start gap-4 pt-2 sm:pt-4 lg:flex-1 lg:justify-center">
                   <LiquidMetalHero
                     className="min-h-0 py-0"
                     badge={t.heroEyebrow}
@@ -546,7 +546,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
+                <div className="pb-4 pr-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1 lg:pb-2">
                   <AuditDashboardContent
                     state={dashboardState}
                     locale={locale}
