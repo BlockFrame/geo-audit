@@ -26,6 +26,7 @@ const scoreValue = (value: number | undefined) => value ?? 0;
 export default function VerboseReportPanel({ report, locale = "en" }: Props) {
   const breakdown = Object.entries(report.score_breakdown ?? {});
   const platformScores = Object.entries(report.platform_readiness?.platform_scores ?? {});
+  const platformComponent = report.score_breakdown?.["Platform Optimization"];
 
   const topMetrics = [
     {
@@ -119,7 +120,14 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
         </div>
 
         <div className="glass-panel-strong rounded-2xl p-5">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">AI Platform Readiness</h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">AI Platform Readiness</h3>
+            {typeof platformComponent?.score === "number" && (
+              <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
+                {platformComponent.score}/100{platformComponent.weight ? ` · ${platformComponent.weight}` : ""}
+              </span>
+            )}
+          </div>
           <div className="mt-4 space-y-3">
             {platformScores.length === 0 && <p className="text-sm text-slate-400">No data available.</p>}
             {platformScores.map(([label, value]) => (

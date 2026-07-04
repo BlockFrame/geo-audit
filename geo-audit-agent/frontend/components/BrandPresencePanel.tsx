@@ -6,6 +6,8 @@ import { BrandMentions, ContentQuality } from "@/lib/types";
 type Props = {
     brand?: BrandMentions;
     content?: ContentQuality;
+    impactScore?: number;
+    impactWeight?: string;
     locale?: "it" | "en";
 };
 
@@ -32,10 +34,8 @@ const EEAT_LABELS: Record<string, { en: string }> = {
     source_signal: { en: "Source citations" },
 };
 
-export default function BrandPresencePanel({ brand, content, locale = "en" }: Props) {
+export default function BrandPresencePanel({ brand, content, impactScore, impactWeight, locale = "en" }: Props) {
     const presence = brand?.platform_presence ?? {};
-    const brandScore = brand?.score;
-    const contentScore = content?.score;
     const eeat = content?.eeat_signals ?? {};
     const wordCount = content?.word_count;
     const eeatCount = Object.values(eeat).filter(Boolean).length;
@@ -58,14 +58,9 @@ export default function BrandPresencePanel({ brand, content, locale = "en" }: Pr
                         label="How brand and content score is calculated"
                         description="Brand/content score comes from platform presence signals plus E-E-A-T indicators and content depth provided in the report."
                     />
-                    {typeof contentScore === "number" && (
+                    {typeof impactScore === "number" && (
                         <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
-                            Content {contentScore}/100
-                        </span>
-                    )}
-                    {typeof brandScore === "number" && (
-                        <span className="rounded-lg border border-slate-400/25 bg-slate-500/10 px-2 py-1 text-xs font-semibold text-slate-200">
-                            Brand {brandScore}/100
+                            {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
                         </span>
                     )}
                 </div>

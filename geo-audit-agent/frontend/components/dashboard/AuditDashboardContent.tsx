@@ -53,6 +53,23 @@ export default function AuditDashboardContent({
   const cardMotion = prefersReducedMotion
     ? { initial: false, animate: { opacity: 1, y: 0 }, transition: { duration: 0 } }
     : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: fadeUpTransition };
+  const scoreBreakdown = state.report?.score_breakdown ?? {};
+  const getBreakdownEntry = (label: string) => {
+    const entry = scoreBreakdown[label];
+    return {
+      score: typeof entry?.score === "number" ? entry.score : undefined,
+      weight: entry?.weight,
+    };
+  };
+  const directImpactCards = [
+    { key: "ai-visibility", label: "AI Citability & Visibility", ...getBreakdownEntry("AI Citability & Visibility") },
+    { key: "brand", label: "Brand Authority Signals", ...getBreakdownEntry("Brand Authority Signals") },
+    { key: "content", label: "Content Quality & E-E-A-T", ...getBreakdownEntry("Content Quality & E-E-A-T") },
+    { key: "technical", label: "Technical Foundations", ...getBreakdownEntry("Technical Foundations") },
+    { key: "schema", label: "Structured Data", ...getBreakdownEntry("Structured Data") },
+    { key: "platform", label: "Platform Optimization", ...getBreakdownEntry("Platform Optimization") },
+  ];
+
   useEffect(() => {
     const report = state.report;
     if (!report || !reportTrackingKey || lastTrackedReportKey.current === reportTrackingKey) {
@@ -113,16 +130,33 @@ export default function AuditDashboardContent({
                 <VerboseReportPanel report={state.report} locale={locale} />
               </motion.div>
             )}
-            {state.crawler_matrix && state.crawler_matrix.length > 0 && (
-              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
-                <CrawlerMatrix crawlers={state.crawler_matrix} locale={locale} />
-              </motion.div>
-            )}
-            {state.recommendations && state.recommendations.length > 0 && (
-              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
-                <ActionPlanCards recommendations={state.recommendations} locale={locale} />
-              </motion.div>
-            )}
+            <motion.div layout {...cardMotion} className="xl:col-span-12">
+              <div className="glass-panel rounded-2xl p-4 sm:p-5">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
+                      Direct GEO score components
+                    </h3>
+                    <p className="mt-1 text-xs text-slate-400">
+                      These factors are directly used in the final GEO score calculation.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                  {directImpactCards.map((item) => (
+                    <div key={item.key} className="glass-chip rounded-xl border border-cyan-300/10 px-3 py-2.5">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400">{item.label}</p>
+                      <p className="mt-1 text-base font-semibold text-slate-100">
+                        {typeof item.score === "number" ? `${item.score}/100` : "n/a"}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        Weight: {item.weight ?? "n/a"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
             {state.report?.technical_audit && (
               <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
                 <TechnicalChecksPanel audit={state.report.technical_audit} locale={locale} />
@@ -142,6 +176,8 @@ export default function AuditDashboardContent({
                 <BrandPresencePanel
                   brand={state.report.brand_mentions}
                   content={state.report.content_quality}
+                  impactScore={getBreakdownEntry("Brand Authority Signals").score}
+                  impactWeight={getBreakdownEntry("Brand Authority Signals").weight}
                   locale={locale}
                 />
               </motion.div>
@@ -153,8 +189,25 @@ export default function AuditDashboardContent({
                   types={state.schema_types ?? []}
                   recommendations={state.schema_recommendations ?? []}
                   orgJsonldTemplate={state.report?.schema_org_jsonld_template}
+                  impactScore={getBreakdownEntry("Structured Data").score}
+                  impactWeight={getBreakdownEntry("Structured Data").weight}
                   locale={locale}
                 />
+              </motion.div>
+            )}
+            <motion.div layout {...cardMotion} className="xl:col-span-12">
+              <div className="glass-panel rounded-2xl p-4 sm:p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
+                  Additional insights (not directly scored)
+                </h3>
+                <p className="mt-1 text-xs text-slate-400">
+                  These analyses support interpretation and prioritization, but are not standalone score inputs in the final GEO formula.
+                </p>
+              </div>
+            </motion.div>
+            {state.crawler_matrix && state.crawler_matrix.length > 0 && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <CrawlerMatrix crawlers={state.crawler_matrix} locale={locale} />
               </motion.div>
             )}
             {state.llms_txt_status && state.llms_txt_status !== "found" && (
@@ -164,6 +217,11 @@ export default function AuditDashboardContent({
                   status={state.llms_txt_status}
                   locale={locale}
                 />
+              </motion.div>
+            )}
+            {state.recommendations && state.recommendations.length > 0 && (
+              <motion.div layout {...cardMotion} className="xl:col-span-12 card-hover">
+                <ActionPlanCards recommendations={state.recommendations} locale={locale} />
               </motion.div>
             )}
           </motion.div>

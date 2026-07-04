@@ -603,8 +603,8 @@ export default function Home() {
           </motion.div>
         </motion.aside>
       </motion.div>
-      <footer className="pointer-events-none fixed inset-x-0 bottom-2 z-30 flex justify-center px-4">
-        <p className="w-[min(94%,52rem)] rounded-xl border border-slate-500/35 bg-slate-950/75 px-3 py-2 text-center text-xs leading-relaxed text-slate-300/85 backdrop-blur-md sm:text-[11px]">
+      <footer className="mx-auto mt-0 mb-2 w-full px-4 sm:mb-3">
+        <p className="mx-auto max-w-4xl text-center text-[9px] leading-relaxed tracking-[0.02em] text-slate-500/65 sm:text-[10px]">
           {t.betaFooter}
         </p>
       </footer>

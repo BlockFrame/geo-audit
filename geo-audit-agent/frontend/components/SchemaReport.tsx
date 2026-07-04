@@ -7,10 +7,12 @@ type Props = {
   types: string[];
   recommendations: string[];
   orgJsonldTemplate?: Record<string, unknown> | null;
+  impactScore?: number;
+  impactWeight?: string;
   locale?: "it" | "en";
 };
 
-export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, locale = "en" }: Props) {
+export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, impactScore, impactWeight, locale = "en" }: Props) {
   const labels = {
     title: "Schema Markup",
     found: "✓ JSON-LD Detected",
@@ -33,6 +35,11 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
             label="How schema metrics are calculated"
             description="Schema metrics are based on JSON-LD detection, extracted schema types, and generated remediation recommendations."
           />
+          {typeof impactScore === "number" && (
+            <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
+              {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
+            </span>
+          )}
           <span className="text-[11px] text-slate-400">
             {found ? "found" : "missing"} · {types.length} types
           </span>
