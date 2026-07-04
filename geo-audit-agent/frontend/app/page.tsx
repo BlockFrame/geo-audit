@@ -66,7 +66,7 @@ const UI_TEXT: Record<AppLocale, {
     socialLinkedin: "LinkedIn",
     socialDiscord: "Discord",
     socialBug: "Feedback, bugs & feature requests",
-    betaFooter: "Beta version powered by Wired Frame Project — made with love in Italy, available for all.",
+    betaFooter: "Beta version powered by Wired Frame Project. Made with ♥ in Italy, available for all.",
   },
   en: {
     copilotReadable: "Current GEO audit state: URL, scores, and findings",
@@ -94,7 +94,7 @@ const UI_TEXT: Record<AppLocale, {
     socialLinkedin: "LinkedIn",
     socialDiscord: "Discord",
     socialBug: "Feedback, bugs & feature requests",
-    betaFooter: "Beta version powered by Wired Frame Project — made with love in Italy, available for all.",
+    betaFooter: "Beta version powered by Wired Frame Project. Made with ♥ in Italy, available for all.",
   },
 };
 
@@ -379,7 +379,7 @@ export default function Home() {
   return (
     <>
       <a href="#main-dashboard" className="skip-link">Skip to audit dashboard</a>
-      <div className="flex min-h-screen flex-col overflow-hidden">
+      <div className="flex h-screen min-h-screen flex-col overflow-hidden">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
