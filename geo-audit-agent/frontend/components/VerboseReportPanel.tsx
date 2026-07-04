@@ -27,33 +27,51 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
   const breakdown = Object.entries(report.score_breakdown ?? {});
   const platformScores = Object.entries(report.platform_readiness?.platform_scores ?? {});
   const platformComponent = report.score_breakdown?.["Platform Optimization"];
+  const breakdownMap = report.score_breakdown ?? {};
 
-  const topMetrics = [
+  const componentConfig = [
     {
-      label: "GEO Score",
-      value: `${report.geo_score ?? "n/a"}/100`,
+      key: "AI Citability & Visibility",
       explainability:
-        "Final weighted GEO score from the backend score breakdown: AI Citability & Visibility 25%, Brand Authority Signals 20%, Content Quality & E-E-A-T 20%, Technical Foundations 15%, Structured Data 10%, Platform Optimization 10%.",
+        "Composite score used in GEO formula, built from citability score, crawler accessibility, and llms.txt readiness.",
     },
     {
-      label: "Citability",
-      value: `${report.citability_score ?? "n/a"}/100`,
+      key: "Brand Authority Signals",
       explainability:
-        "Weighted citability score from six 0-10 sub-signals: answer passages 25%, factual density 20%, authority signals 20%, content length 15%, structured content 10%, and unique data 10%.",
+        "Score from authority-platform presence and entity trust signals extracted by the brand analysis module.",
     },
     {
-      label: "Technical",
-      value: `${report.technical_audit?.score ?? "n/a"}/100`,
+      key: "Content Quality & E-E-A-T",
       explainability:
-        "Technical score from weighted checks: HTTPS 10, viewport 8, canonical 8, lang 5, indexable 12, sitemap 5, H1 up to 8, security headers up to 10, SSR up to 15, CLS stability 5, and IndexNow 5. Total is capped at 100.",
+        "Score from content depth, readability, and E-E-A-T indicators (author/source/trust/freshness signals).",
     },
     {
-      label: "Content",
-      value: `${report.content_quality?.score ?? "n/a"}/100`,
+      key: "Technical Foundations",
       explainability:
-        "Content score from the content-quality analyzer: word count depth up to 30 points, sentence readability up to 20, five E-E-A-T signals up to 40 total, and lists/tables 10. Shows n/a when content_quality.score is missing from the report.",
+        "Score from technical checks (indexability, rendering, metadata, security headers, and performance/indexing factors).",
     },
-  ];
+    {
+      key: "Structured Data",
+      explainability:
+        "Score from structured data detection/coverage and schema remediation analysis.",
+    },
+    {
+      key: "Platform Optimization",
+      explainability:
+        "Score from AI platform readiness analysis used directly in final GEO computation.",
+    },
+  ] as const;
+
+  const topMetrics = componentConfig.map((item) => {
+    const entry = breakdownMap[item.key];
+    const score = typeof entry?.score === "number" ? Math.max(0, Math.min(100, entry.score)) : undefined;
+    return {
+      label: item.key,
+      value: typeof score === "number" ? `${score}/100` : "n/a",
+      weight: entry?.weight ?? "n/a",
+      explainability: item.explainability,
+    };
+  });
 
   return (
     <section className="glass-panel rounded-2xl p-4 sm:p-6">
@@ -66,7 +84,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
                 <h2 className="text-lg font-semibold text-slate-100 sm:text-xl">Detailed GEO audit</h2>
                 <ExplainabilityHint
                   label="How detailed GEO audit metrics are calculated"
-                  description="The four KPI cards below read directly from report fields: geo_score, citability_score, technical_audit.score, and content_quality.score. Hover each card icon for the exact formula behind that metric."
+                  description="These KPI cards map 1:1 to the backend score_breakdown components that directly compose the final GEO score. Each card shows exact component score and weight used in the weighted formula."
                 />
               </div>
             </div>
@@ -85,6 +103,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
                   />
                 </div>
                 <p className="mt-1 text-lg font-semibold text-slate-100">{metric.value}</p>
+                <p className="mt-0.5 text-[11px] text-slate-400">Weight: {metric.weight}</p>
               </div>
             ))}
           </div>

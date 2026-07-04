@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { cn } from "@/lib/utils";
 
@@ -16,8 +17,42 @@ export default function ExplainabilityHint({
   className,
 }: ExplainabilityHintProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const tooltipId = useId();
   const rootRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !rootRef.current) {
+      return;
+    }
+
+    const updatePosition = () => {
+      if (!rootRef.current) {
+        return;
+      }
+
+      const rect = rootRef.current.getBoundingClientRect();
+      const targetTop = rect.bottom + 8;
+      const targetLeft = rect.left + rect.width / 2;
+
+      setTooltipStyle({ top: targetTop, left: targetLeft });
+    };
+
+    updatePosition();
+
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -76,16 +111,20 @@ export default function ExplainabilityHint({
           <path d="M8 7v4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
         </svg>
       </button>
-      <span
-        id={tooltipId}
-        role="tooltip"
-        className={cn(
-          "pointer-events-none absolute left-1/2 top-[calc(100%+0.45rem)] z-50 w-64 -translate-x-1/2 rounded-lg border border-cyan-300/25 bg-slate-950/95 px-2.5 py-2 text-[11px] leading-relaxed text-slate-200 shadow-2xl transition",
-          open ? "opacity-100" : "opacity-0",
-        )}
-      >
-        {description}
-      </span>
+      {mounted && createPortal(
+        <span
+          id={tooltipId}
+          role="tooltip"
+          className={cn(
+            "pointer-events-none fixed z-[200] w-64 -translate-x-1/2 rounded-lg border border-cyan-300/25 bg-slate-950/95 px-2.5 py-2 text-[11px] leading-relaxed text-slate-200 shadow-2xl transition",
+            open ? "opacity-100" : "opacity-0",
+          )}
+          style={{ top: tooltipStyle.top, left: tooltipStyle.left }}
+        >
+          {description}
+        </span>,
+        document.body,
+      )}
     </span>
   );
 }

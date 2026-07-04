@@ -61,15 +61,6 @@ export default function AuditDashboardContent({
       weight: entry?.weight,
     };
   };
-  const directImpactCards = [
-    { key: "ai-visibility", label: "AI Citability & Visibility", ...getBreakdownEntry("AI Citability & Visibility") },
-    { key: "brand", label: "Brand Authority Signals", ...getBreakdownEntry("Brand Authority Signals") },
-    { key: "content", label: "Content Quality & E-E-A-T", ...getBreakdownEntry("Content Quality & E-E-A-T") },
-    { key: "technical", label: "Technical Foundations", ...getBreakdownEntry("Technical Foundations") },
-    { key: "schema", label: "Structured Data", ...getBreakdownEntry("Structured Data") },
-    { key: "platform", label: "Platform Optimization", ...getBreakdownEntry("Platform Optimization") },
-  ];
-
   useEffect(() => {
     const report = state.report;
     if (!report || !reportTrackingKey || lastTrackedReportKey.current === reportTrackingKey) {
@@ -130,33 +121,6 @@ export default function AuditDashboardContent({
                 <VerboseReportPanel report={state.report} locale={locale} />
               </motion.div>
             )}
-            <motion.div layout {...cardMotion} className="xl:col-span-12">
-              <div className="glass-panel rounded-2xl p-4 sm:p-5">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
-                      Direct GEO score components
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-400">
-                      These factors are directly used in the final GEO score calculation.
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-                  {directImpactCards.map((item) => (
-                    <div key={item.key} className="glass-chip rounded-xl border border-cyan-300/10 px-3 py-2.5">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400">{item.label}</p>
-                      <p className="mt-1 text-base font-semibold text-slate-100">
-                        {typeof item.score === "number" ? `${item.score}/100` : "n/a"}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">
-                        Weight: {item.weight ?? "n/a"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
             {state.report?.technical_audit && (
               <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
                 <TechnicalChecksPanel audit={state.report.technical_audit} locale={locale} />

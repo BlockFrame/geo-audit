@@ -379,11 +379,12 @@ export default function Home() {
   return (
     <>
       <a href="#main-dashboard" className="skip-link">Skip to audit dashboard</a>
+      <div className="flex min-h-screen flex-col overflow-hidden">
       <motion.div
         initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="app-shell flex min-h-screen flex-col overflow-x-hidden overflow-y-visible text-slate-100 lg:h-screen lg:flex-row lg:overflow-y-hidden"
+        className="app-shell flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-hidden text-slate-100 lg:flex-row"
       >
 
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
@@ -603,11 +604,12 @@ export default function Home() {
           </motion.div>
         </motion.aside>
       </motion.div>
-      <footer className="mx-auto mt-0 mb-2 w-full px-4 sm:mb-3">
-        <p className="mx-auto max-w-4xl text-center text-[9px] leading-relaxed tracking-[0.02em] text-slate-500/65 sm:text-[10px]">
+      <footer className="mx-auto mb-2 w-full px-4 sm:mb-3">
+        <p className="mx-auto max-w-4xl text-center text-[11px] leading-relaxed tracking-[0.02em] text-white/82 sm:text-xs">
           {t.betaFooter}
         </p>
       </footer>
+      </div>
     </>
   );
 }
