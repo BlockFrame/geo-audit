@@ -4,7 +4,7 @@ import { useCoAgent, useCopilotChat } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 import { Role, TextMessage } from "@copilotkit/runtime-client-gql";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import AuditDashboardContent from "@/components/dashboard/AuditDashboardContent";
@@ -200,6 +200,7 @@ export default function Home() {
   const [auditUrl, setAuditUrl] = useState("");
   const [directAuditState, setDirectAuditState] = useState<GeoAuditState | null>(null);
   const [directAuditError, setDirectAuditError] = useState<string | null>(null);
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const auditInputRef = useRef<HTMLInputElement>(null);
 
@@ -573,12 +574,12 @@ export default function Home() {
           locale={locale}
         />
 
-        {/* ── Right: CopilotKit Chat ───────────────────────────────────────── */}
+        {/* ── Right: CopilotKit Chat (desktop only) ───────────────────────── */}
         <motion.aside
           initial={prefersReducedMotion ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full shrink-0 p-4 pt-0 pb-2 sm:px-5 sm:pb-2 md:px-7 md:pb-3 lg:h-full lg:min-h-0 lg:w-[26rem] lg:px-7 lg:pt-7 lg:pb-3 xl:w-[28rem]"
+          className="hidden lg:flex w-full shrink-0 p-4 pt-0 pb-2 sm:px-5 sm:pb-2 md:px-7 md:pb-3 lg:h-full lg:min-h-0 lg:w-[26rem] lg:px-7 lg:pt-7 lg:pb-3 xl:w-[28rem]"
           aria-label="GEO audit chat assistant"
         >
           <motion.div layout className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">
@@ -603,6 +604,83 @@ export default function Home() {
             />
           </motion.div>
         </motion.aside>
+
+        {/* ── Mobile: FAB + chat bottom sheet overlay ──────────────────────── */}
+        {/* FAB — visible only on mobile */}
+        <button
+          className="fixed bottom-6 right-5 z-40 lg:hidden flex items-center gap-2 rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-300/30 transition active:scale-95"
+          onClick={() => setMobileChatOpen(true)}
+          aria-label="Open chat assistant"
+          aria-haspopup="dialog"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-4 shrink-0" aria-hidden="true">
+            <path d="M3.505 2.365A41.369 41.369 0 0 1 9 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 0 0-.577-.069 43.141 43.141 0 0 0-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 0 1 5 17.25v-3.443c-.501-.048-1-.106-1.495-.172C2.033 13.438 1 12.162 1 10.72V5.28c0-1.441 1.033-2.717 2.505-2.914Z" />
+            <path d="M14 6c-.762 0-1.52.02-2.271.062C10.157 6.148 9 7.472 9 8.998v2.24c0 1.519 1.157 2.843 2.729 2.936 1.037.06 2.079.09 3.271.09 1.06 0 1.903-.695 2.07-1.647a43.293 43.293 0 0 0 .189-2.429 43.293 43.293 0 0 0-.189-2.429C16.903 6.695 16.06 6 15 6h-1Z" />
+          </svg>
+          Chat
+        </button>
+
+        {/* Bottom sheet overlay */}
+        <AnimatePresence>
+          {mobileChatOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="GEO audit chat assistant">
+              {/* backdrop */}
+              <motion.div
+                key="chat-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                onClick={() => setMobileChatOpen(false)}
+              />
+              {/* panel */}
+              <motion.div
+                key="chat-panel"
+                initial={prefersReducedMotion ? { opacity: 0 } : { y: "100%" }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { y: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { y: "100%" }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute bottom-0 left-0 right-0 flex flex-col glass-panel-strong rounded-t-3xl overflow-hidden"
+                style={{ height: "85dvh" }}
+              >
+                {/* header */}
+                <div className="flex shrink-0 items-start justify-between gap-3 px-4 pt-4 pb-2">
+                  <div>
+                    <p className="text-[10px] font-mono uppercase tracking-[0.24em] text-cyan-200/80">Conversation console</p>
+                    <p className="mt-1 text-sm leading-5 text-slate-300/78">Paste a full URL or ask for a GEO audit.</p>
+                  </div>
+                  <button
+                    onClick={() => setMobileChatOpen(false)}
+                    aria-label="Close chat"
+                    className="mt-0.5 shrink-0 rounded-full p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-slate-100"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5" aria-hidden="true">
+                      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="shrink-0 px-4 pb-2">
+                  <div
+                    className="rounded-xl border border-amber-300/18 bg-amber-200/8 px-2.5 py-2 text-[11px] leading-relaxed text-amber-100/88"
+                    role="note"
+                    aria-label="AI disclosure notice"
+                  >
+                    {t.aiActLabel}
+                  </div>
+                </div>
+                <CopilotChat
+                  onSubmitMessage={async (message) => {
+                    await runDashboardAuditFromChat(message);
+                    setMobileChatOpen(false);
+                  }}
+                  labels={{ title: t.chatTitle, initial: t.chatInitial }}
+                  className="h-full min-h-0"
+                />
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </motion.div>
       <footer className="mx-auto mb-2 w-full shrink-0 px-4 sm:mb-3">
         <p className="mx-auto max-w-4xl text-center text-[11px] leading-relaxed tracking-[0.02em] text-white/82 sm:text-xs">
