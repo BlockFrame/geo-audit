@@ -261,7 +261,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
                         return <circle key={item.label} cx={point.x} cy={point.y} r="3.5" fill="#67e8f9" />;
                       })}
                     </svg>
-                    <div className="pointer-events-none absolute inset-0">
+                    <div className="pointer-events-none absolute inset-0 hidden sm:block">
                       {radarLabels.map((item) => (
                         <div
                           key={item.label}
@@ -275,6 +275,16 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
                         </div>
                       ))}
                     </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:hidden">
+                    {radarLabels.map((item) => (
+                      <div key={item.label} className={`rounded-lg border px-2.5 py-2 ${item.tone}`}>
+                        <p className="text-[11px]">{item.label}</p>
+                        <p className="mt-0.5 text-[10px] font-semibold">
+                          {item.value}/100 · {item.tag}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (

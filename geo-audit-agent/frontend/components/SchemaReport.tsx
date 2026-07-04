@@ -38,12 +38,14 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
             label="How schema metrics are calculated"
             description={`Structured Data shown here is the direct GEO component from score_breakdown (${displayScore}/100${impactWeight ? `, ${impactWeight}` : ""}), based on JSON-LD detection, schema coverage, and remediation analysis.`}
           />
-          <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
-            {displayScore}<span className="text-sm text-slate-400">/100</span>
-          </span>
-          <span className="text-[11px] text-slate-400">
-            {found ? "found" : "missing"} · {types.length} types
-          </span>
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+              {displayScore}<span className="text-sm text-slate-400">/100</span>
+            </span>
+            <span className="text-[11px] text-slate-400">
+              {found ? "found" : "missing"} · {types.length} types
+            </span>
+          </div>
         </div>
       </div>
 
