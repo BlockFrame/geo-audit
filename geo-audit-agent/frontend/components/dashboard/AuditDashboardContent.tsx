@@ -9,6 +9,7 @@ import CitabilityPanel from "@/components/CitabilityPanel";
 import ContentQualityPanel from "@/components/ContentQualityPanel";
 import CrawlerMatrix from "@/components/CrawlerMatrix";
 import LlmsTxtPreview from "@/components/LlmsTxtPreview";
+import PlatformOptimizationPanel from "@/components/PlatformOptimizationPanel";
 import SchemaReport from "@/components/SchemaReport";
 import TechnicalChecksPanel from "@/components/TechnicalChecksPanel";
 import VerboseReportPanel from "@/components/VerboseReportPanel";
@@ -172,6 +173,16 @@ export default function AuditDashboardContent({
                   orgJsonldTemplate={state.report?.schema_org_jsonld_template}
                   impactScore={getBreakdownEntry("Structured Data").score}
                   impactWeight={getBreakdownEntry("Structured Data").weight}
+                  locale={locale}
+                />
+              </motion.div>
+            )}
+            {state.report?.platform_readiness && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <PlatformOptimizationPanel
+                  platform={state.report.platform_readiness}
+                  impactScore={getBreakdownEntry("Platform Optimization").score}
+                  impactWeight={getBreakdownEntry("Platform Optimization").weight}
                   locale={locale}
                 />
               </motion.div>
