@@ -32,7 +32,7 @@ export default function CitabilityPanel({ score, details, locale = "en" }: Props
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-                        AI Citability Score
+                        AI Citability & Visibility
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                         How likely AI models are to quote or reference this content

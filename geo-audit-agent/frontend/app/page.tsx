@@ -388,7 +388,7 @@ export default function Home() {
       >
 
         {/* ── Left: Dashboard ─────────────────────────────────────────────── */}
-        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 sm:p-5 md:p-7 lg:h-full lg:min-h-0" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
+        <motion.main id="main-dashboard" className="min-w-0 flex flex-1 overflow-visible p-4 pb-2 sm:p-5 sm:pb-2 md:px-7 md:pt-7 md:pb-3 lg:h-full lg:min-h-0 lg:px-7 lg:pt-7 lg:pb-3" tabIndex={-1} aria-label="GEO audit dashboard" initial={false} layout>
           <motion.div layout className="glass-panel relative flex min-h-full w-full rounded-[1.75rem] p-4 sm:p-5 md:rounded-3xl md:p-7 lg:h-full lg:min-h-0 lg:flex-col">
             {showHeroLanding ? (
             <div className="relative flex flex-1 min-h-0 flex-col overflow-y-auto pb-4 pr-1 sm:pb-6 lg:overflow-hidden lg:pr-0">
@@ -578,7 +578,7 @@ export default function Home() {
           initial={prefersReducedMotion ? false : { opacity: 0, x: 16 }}
           animate={{ opacity: 1, x: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.35, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full shrink-0 p-4 pt-0 sm:px-5 md:px-7 md:pb-7 lg:h-full lg:min-h-0 lg:w-[26rem] lg:p-7 xl:w-[28rem]"
+          className="w-full shrink-0 p-4 pt-0 pb-2 sm:px-5 sm:pb-2 md:px-7 md:pb-3 lg:h-full lg:min-h-0 lg:w-[26rem] lg:px-7 lg:pt-7 lg:pb-3 xl:w-[28rem]"
           aria-label="GEO audit chat assistant"
         >
           <motion.div layout className="glass-panel-strong flex h-[min(42rem,72vh)] min-h-[28rem] flex-col overflow-hidden rounded-[1.75rem] lg:h-full lg:min-h-0 lg:rounded-3xl">

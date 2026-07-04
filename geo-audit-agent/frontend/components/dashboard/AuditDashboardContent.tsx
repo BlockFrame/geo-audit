@@ -174,6 +174,11 @@ export default function AuditDashboardContent({
                 <CrawlerMatrix crawlers={state.crawler_matrix} locale={locale} />
               </motion.div>
             )}
+            {state.recommendations && state.recommendations.length > 0 && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <ActionPlanCards recommendations={state.recommendations} locale={locale} />
+              </motion.div>
+            )}
             {state.llms_txt_status && state.llms_txt_status !== "found" && (
               <motion.div layout {...cardMotion} className="xl:col-span-12 card-hover">
                 <LlmsTxtPreview
@@ -181,11 +186,6 @@ export default function AuditDashboardContent({
                   status={state.llms_txt_status}
                   locale={locale}
                 />
-              </motion.div>
-            )}
-            {state.recommendations && state.recommendations.length > 0 && (
-              <motion.div layout {...cardMotion} className="xl:col-span-12 card-hover">
-                <ActionPlanCards recommendations={state.recommendations} locale={locale} />
               </motion.div>
             )}
           </motion.div>

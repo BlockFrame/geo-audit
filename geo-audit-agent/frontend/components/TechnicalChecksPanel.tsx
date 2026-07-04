@@ -84,7 +84,7 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
             <div className="flex items-center justify-between mb-5">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-                        Technical Checks
+                        Technical Foundations
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                         {passCount}/{Object.keys(CHECKS).length} passed

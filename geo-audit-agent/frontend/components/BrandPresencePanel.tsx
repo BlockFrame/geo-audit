@@ -47,7 +47,7 @@ export default function BrandPresencePanel({ brand, content, impactScore, impact
             <div className="flex items-center justify-between mb-5">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-                        Brand Authority & E-E-A-T
+                        Brand Authority Signals
                     </h2>
                     <p className="text-[11px] text-slate-400 mt-0.5">
                         AI platform presence & trust signals

@@ -14,7 +14,7 @@ type Props = {
 
 export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, impactScore, impactWeight, locale = "en" }: Props) {
   const labels = {
-    title: "Schema Markup",
+    title: "Structured Data",
     found: "✓ JSON-LD Detected",
     notFound: "✗ JSON-LD Missing",
     types: "Detected types:",
