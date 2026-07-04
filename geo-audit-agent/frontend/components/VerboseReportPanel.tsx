@@ -35,7 +35,6 @@ const scoreTone = (value: number) => {
 };
 
 export default function VerboseReportPanel({ report, locale = "en" }: Props) {
-  const breakdown = Object.entries(report.score_breakdown ?? {});
   const platformScores = Object.entries(report.platform_readiness?.platform_scores ?? {});
   const platformComponent = report.score_breakdown?.["Platform Optimization"];
   const breakdownMap = report.score_breakdown ?? {};
@@ -83,6 +82,14 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
       explainability: item.explainability,
     };
   });
+  const orderedBreakdown = [
+    ...componentConfig
+      .map((item) => [item.key, breakdownMap[item.key]] as const)
+      .filter(([, details]) => details && typeof details.score === "number"),
+    ...Object.entries(breakdownMap).filter(
+      ([label]) => !componentConfig.some((component) => component.key === label),
+    ),
+  ];
 
   return (
     <section className="glass-panel rounded-2xl p-4 sm:p-6">
@@ -113,7 +120,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
           </p>
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
             {topMetrics.map((metric) => (
-              <div key={metric.label} className="glass-chip rounded-xl px-4 py-3.5">
+              <div key={metric.label} className="glass-chip flex h-full flex-col rounded-xl px-4 py-3.5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[10px] uppercase tracking-wider text-slate-400">{metric.label}</p>
                   <ExplainabilityHint
@@ -130,8 +137,8 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
         <div className="glass-panel-strong rounded-2xl p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Score Breakdown</h3>
           <div className="mt-4 space-y-2.5">
-            {breakdown.length === 0 && <p className="text-sm text-slate-400">No data available.</p>}
-            {breakdown.map(([label, details]) => {
+            {orderedBreakdown.length === 0 && <p className="text-sm text-slate-400">No data available.</p>}
+            {orderedBreakdown.map(([label, details]) => {
               const value = scoreValue(details?.score);
               const tone = scoreTone(value);
               return (
@@ -154,9 +161,7 @@ export default function VerboseReportPanel({ report, locale = "en" }: Props) {
         </div>
 
         <div className="space-y-5 xl:col-span-4">
-          <div className="h-full">
-            <ReportDownloads report={report} locale={locale} />
-          </div>
+          <ReportDownloads report={report} locale={locale} />
           <div className="glass-panel-strong rounded-2xl p-5">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Platform Optimization</h3>

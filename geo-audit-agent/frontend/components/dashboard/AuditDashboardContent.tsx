@@ -121,11 +121,6 @@ export default function AuditDashboardContent({
                 <VerboseReportPanel report={state.report} locale={locale} />
               </motion.div>
             )}
-            {state.report?.technical_audit && (
-              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
-                <TechnicalChecksPanel audit={state.report.technical_audit} locale={locale} />
-              </motion.div>
-            )}
             {state.report?.citability_score !== undefined && (
               <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
                 <CitabilityPanel
@@ -133,6 +128,11 @@ export default function AuditDashboardContent({
                   details={state.report.citability_details}
                   locale={locale}
                 />
+              </motion.div>
+            )}
+            {state.report?.technical_audit && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <TechnicalChecksPanel audit={state.report.technical_audit} locale={locale} />
               </motion.div>
             )}
             {(state.report?.brand_mentions || state.report?.content_quality) && (

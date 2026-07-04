@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  trackExportAudienceChanged,
-  trackExportDownloaded,
-  trackExportModeChanged,
+    trackExportAudienceChanged,
+    trackExportDownloaded,
+    trackExportModeChanged,
 } from "@/lib/analytics";
 import { GeoReport } from "@/lib/types";
 import { useState } from "react";
@@ -111,7 +111,7 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
   };
 
   return (
-    <div className="glass-panel-strong flex h-full flex-col rounded-2xl p-5">
+    <div className="glass-panel-strong flex flex-col rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs text-slate-300/80 uppercase tracking-wider">{labels.reportTitle}</p>
