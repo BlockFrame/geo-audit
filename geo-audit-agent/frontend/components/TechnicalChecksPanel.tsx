@@ -3,7 +3,12 @@
 import ExplainabilityHint from "@/components/ui/explainability-hint";
 import { TechnicalAudit } from "@/lib/types";
 
-type Props = { audit: TechnicalAudit; locale?: "it" | "en" };
+type Props = {
+    audit: TechnicalAudit;
+    impactScore?: number;
+    impactWeight?: string;
+    locale?: "it" | "en";
+};
 
 type CheckEval = "good_if_true" | "bad_if_true" | "good_if_one" | "count_low_is_good";
 
@@ -68,11 +73,12 @@ const STATUS_DOT: Record<"pass" | "fail" | "warn", string> = {
     warn: "bg-amber-400",
 };
 
-export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
+export default function TechnicalChecksPanel({ audit, impactScore, impactWeight, locale = "en" }: Props) {
     const checks = audit.checks ?? {};
     const issues = audit.issues ?? [];
     const score = audit.score ?? 0;
-    const scoreColor = score >= 70 ? "#2dd4bf" : score >= 45 ? "#fbbf24" : "#fb7185";
+    const displayScore = typeof impactScore === "number" ? impactScore : score;
+    const scoreColor = displayScore >= 70 ? "#2dd4bf" : displayScore >= 45 ? "#fbbf24" : "#fb7185";
 
     const passCount = Object.keys(CHECKS).filter((k) => {
         const cfg = CHECKS[k];
@@ -93,10 +99,10 @@ export default function TechnicalChecksPanel({ audit, locale = "en" }: Props) {
                 <div className="flex items-center gap-2">
                     <ExplainabilityHint
                         label="How technical score is calculated"
-                        description="Technical score from weighted checks: HTTPS 10, viewport 8, canonical 8, lang 5, indexable 12, sitemap 5, H1 up to 8, security headers up to 10, SSR up to 15, CLS stability 5, and IndexNow 5. Total is capped at 100."
+                        description={`Technical Foundations shown here is the direct GEO component from score_breakdown (${typeof impactScore === "number" ? `${impactScore}/100` : `${score}/100`}${impactWeight ? `, ${impactWeight}` : ""}). Raw technical audit score is ${score}/100 from weighted pass/fail checks.`}
                     />
                     <span className="text-2xl font-bold" style={{ color: scoreColor }}>
-                        {score}<span className="text-sm text-slate-400">/100</span>
+                        {displayScore}<span className="text-sm text-slate-400">/100</span>
                     </span>
                 </div>
             </div>

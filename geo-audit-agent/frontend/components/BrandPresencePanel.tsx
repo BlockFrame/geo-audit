@@ -1,11 +1,10 @@
 "use client";
 
 import ExplainabilityHint from "@/components/ui/explainability-hint";
-import { BrandMentions, ContentQuality } from "@/lib/types";
+import { BrandMentions } from "@/lib/types";
 
 type Props = {
     brand?: BrandMentions;
-    content?: ContentQuality;
     impactScore?: number;
     impactWeight?: string;
     locale?: "it" | "en";
@@ -26,19 +25,8 @@ const PLATFORMS: Record<string, PlatformConfig> = {
     facebook: { en: "Facebook", icon: "𝔣", why_en: "Social entity recognition" },
 };
 
-const EEAT_LABELS: Record<string, { en: string }> = {
-    about_page_link: { en: "About page link" },
-    contact_page_link: { en: "Contact page link" },
-    author_signal: { en: "Author attribution" },
-    freshness_signal: { en: "Content freshness" },
-    source_signal: { en: "Source citations" },
-};
-
-export default function BrandPresencePanel({ brand, content, impactScore, impactWeight, locale = "en" }: Props) {
+export default function BrandPresencePanel({ brand, impactScore, impactWeight, locale = "en" }: Props) {
     const presence = brand?.platform_presence ?? {};
-    const eeat = content?.eeat_signals ?? {};
-    const wordCount = content?.word_count;
-    const eeatCount = Object.values(eeat).filter(Boolean).length;
     const presCount = Object.values(presence).filter(Boolean).length;
 
     return (
@@ -95,48 +83,6 @@ export default function BrandPresencePanel({ brand, content, impactScore, impact
                     })}
                 </div>
             </div>
-
-            {/* E-E-A-T signals */}
-            {Object.keys(eeat).length > 0 && (
-                <div>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2.5">
-                        {`E-E-A-T signals (${eeatCount}/5)`}
-                    </p>
-                    <div className="space-y-1.5">
-                        {Object.entries(eeat).map(([key, val]) => {
-                            const label = EEAT_LABELS[key];
-                            return (
-                                <div
-                                    key={key}
-                                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded border text-[11px] ${val
-                                        ? "bg-emerald-400/10 border-emerald-300/25 text-emerald-100"
-                                        : "bg-rose-400/10 border-rose-300/20 text-rose-200"
-                                        }`}
-                                >
-                                    <span>{label?.en ?? key}</span>
-                                    <span className="font-mono">{val ? "✓" : "✗"}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {wordCount !== undefined && (
-                        <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-                            <span>Word count:</span>
-                            <span
-                                className={`font-mono ${wordCount >= 1200 ? "text-emerald-300" :
-                                    wordCount >= 700 ? "text-amber-300" : "text-rose-300"
-                                    }`}
-                            >
-                                {wordCount.toLocaleString()}
-                            </span>
-                            <span className="text-slate-500">
-                                (target ≥1,200)
-                            </span>
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* Brand issues */}
             {(brand?.issues?.length ?? 0) > 0 && (

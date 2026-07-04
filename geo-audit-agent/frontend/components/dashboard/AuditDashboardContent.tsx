@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import ActionPlanCards from "@/components/ActionPlanCards";
 import BrandPresencePanel from "@/components/BrandPresencePanel";
 import CitabilityPanel from "@/components/CitabilityPanel";
+import ContentQualityPanel from "@/components/ContentQualityPanel";
 import CrawlerMatrix from "@/components/CrawlerMatrix";
 import LlmsTxtPreview from "@/components/LlmsTxtPreview";
 import SchemaReport from "@/components/SchemaReport";
@@ -125,23 +126,39 @@ export default function AuditDashboardContent({
               <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
                 <CitabilityPanel
                   score={state.report.citability_score}
+                  impactScore={getBreakdownEntry("AI Citability & Visibility").score}
+                  impactWeight={getBreakdownEntry("AI Citability & Visibility").weight}
                   details={state.report.citability_details}
+                  locale={locale}
+                />
+              </motion.div>
+            )}
+            {state.report?.brand_mentions && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <BrandPresencePanel
+                  brand={state.report.brand_mentions}
+                  impactScore={getBreakdownEntry("Brand Authority Signals").score}
+                  impactWeight={getBreakdownEntry("Brand Authority Signals").weight}
+                  locale={locale}
+                />
+              </motion.div>
+            )}
+            {state.report?.content_quality && (
+              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
+                <ContentQualityPanel
+                  content={state.report.content_quality}
+                  impactScore={getBreakdownEntry("Content Quality & E-E-A-T").score}
+                  impactWeight={getBreakdownEntry("Content Quality & E-E-A-T").weight}
                   locale={locale}
                 />
               </motion.div>
             )}
             {state.report?.technical_audit && (
               <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
-                <TechnicalChecksPanel audit={state.report.technical_audit} locale={locale} />
-              </motion.div>
-            )}
-            {(state.report?.brand_mentions || state.report?.content_quality) && (
-              <motion.div layout {...cardMotion} className="xl:col-span-6 card-hover">
-                <BrandPresencePanel
-                  brand={state.report.brand_mentions}
-                  content={state.report.content_quality}
-                  impactScore={getBreakdownEntry("Brand Authority Signals").score}
-                  impactWeight={getBreakdownEntry("Brand Authority Signals").weight}
+                <TechnicalChecksPanel
+                  audit={state.report.technical_audit}
+                  impactScore={getBreakdownEntry("Technical Foundations").score}
+                  impactWeight={getBreakdownEntry("Technical Foundations").weight}
                   locale={locale}
                 />
               </motion.div>

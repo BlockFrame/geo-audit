@@ -4,6 +4,8 @@ import ExplainabilityHint from "@/components/ui/explainability-hint";
 
 type Props = {
     score: number;
+    impactScore?: number;
+    impactWeight?: string;
     details?: Record<string, number> | null;
     locale?: "it" | "en";
 };
@@ -23,8 +25,9 @@ const BAR_COLOR = (v: number) =>
 const SCORE_COLOR = (s: number) =>
     s >= 70 ? "#2dd4bf" : s >= 40 ? "#fbbf24" : "#fb7185";
 
-export default function CitabilityPanel({ score, details, locale = "en" }: Props) {
+export default function CitabilityPanel({ score, impactScore, impactWeight, details, locale = "en" }: Props) {
     const entries = details ? Object.entries(details) : [];
+    const displayScore = typeof impactScore === "number" ? impactScore : score;
 
     return (
         <div className="glass-panel rounded-2xl p-6">
@@ -41,11 +44,14 @@ export default function CitabilityPanel({ score, details, locale = "en" }: Props
                 <div className="flex flex-col items-end gap-1">
                     <ExplainabilityHint
                         label="How citability score is calculated"
-                        description={`Weighted citability score from six 0-10 sub-signals: answer passages 25%, factual density 20%, authority signals 20%, content length 15%, structured content 10%, and unique data 10%. Current report value: ${score}/100.`}
+                        description={`AI Citability & Visibility shown here is the direct GEO component from score_breakdown (${typeof impactScore === "number" ? `${impactScore}/100` : `${score}/100`}${impactWeight ? `, ${impactWeight}` : ""}). Raw citability analyzer score is ${score}/100 and feeds this component with crawler/llms signals.`}
                     />
-                    <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(score) }}>
-                        {score}<span className="text-sm text-slate-400">/100</span>
+                    <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+                        {displayScore}<span className="text-sm text-slate-400">/100</span>
                     </span>
+                    {typeof impactScore === "number" && (
+                        <span className="text-[11px] text-slate-400">weight {impactWeight ?? "n/a"} · raw {score}/100</span>
+                    )}
                 </div>
             </div>
 
