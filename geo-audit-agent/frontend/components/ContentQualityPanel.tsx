@@ -17,6 +17,8 @@ const EEAT_LABELS: Record<string, string> = {
   freshness_signal: "Content freshness",
   source_signal: "Source citations",
 };
+const SCORE_COLOR = (s: number) =>
+  s >= 70 ? "#2dd4bf" : s >= 45 ? "#fbbf24" : "#fb7185";
 
 export default function ContentQualityPanel({
   content,
@@ -29,6 +31,7 @@ export default function ContentQualityPanel({
   const wordCount = content?.word_count;
   const avgSentenceLength = content?.avg_sentence_length;
   const issues = content?.issues ?? [];
+  const displayScore = typeof impactScore === "number" ? impactScore : 0;
 
   return (
     <div className="glass-panel rounded-2xl p-6">
@@ -44,13 +47,11 @@ export default function ContentQualityPanel({
         <div className="flex items-center gap-2">
           <ExplainabilityHint
             label="How content quality score is calculated"
-            description="Content Quality & E-E-A-T is a direct GEO component from score_breakdown, informed by depth/readability and E-E-A-T signals."
+            description={`Content Quality & E-E-A-T shown here is the direct GEO component from score_breakdown (${displayScore}/100${impactWeight ? `, ${impactWeight}` : ""}), informed by depth/readability and E-E-A-T signals.`}
           />
-          {typeof impactScore === "number" && (
-            <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
-              {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
-            </span>
-          )}
+          <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+            {displayScore}<span className="text-sm text-slate-400">/100</span>
+          </span>
         </div>
       </div>
 

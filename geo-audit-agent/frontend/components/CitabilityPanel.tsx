@@ -23,7 +23,7 @@ const BAR_COLOR = (v: number) =>
     v >= 7 ? "#2dd4bf" : v >= 4 ? "#fbbf24" : "#fb7185";
 
 const SCORE_COLOR = (s: number) =>
-    s >= 70 ? "#2dd4bf" : s >= 40 ? "#fbbf24" : "#fb7185";
+    s >= 70 ? "#2dd4bf" : s >= 45 ? "#fbbf24" : "#fb7185";
 
 export default function CitabilityPanel({ score, impactScore, impactWeight, details, locale = "en" }: Props) {
     const entries = details ? Object.entries(details) : [];
@@ -41,7 +41,7 @@ export default function CitabilityPanel({ score, impactScore, impactWeight, deta
                         How likely AI models are to quote or reference this content
                     </p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-2">
                     <ExplainabilityHint
                         label="How citability score is calculated"
                         description={`AI Citability & Visibility shown here is the direct GEO component from score_breakdown (${typeof impactScore === "number" ? `${impactScore}/100` : `${score}/100`}${impactWeight ? `, ${impactWeight}` : ""}). Raw citability analyzer score is ${score}/100 and feeds this component with crawler/llms signals.`}
@@ -49,9 +49,6 @@ export default function CitabilityPanel({ score, impactScore, impactWeight, deta
                     <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
                         {displayScore}<span className="text-sm text-slate-400">/100</span>
                     </span>
-                    {typeof impactScore === "number" && (
-                        <span className="text-[11px] text-slate-400">weight {impactWeight ?? "n/a"} · raw {score}/100</span>
-                    )}
                 </div>
             </div>
 

@@ -21,6 +21,8 @@ const getBarColor = (value: number) => {
 
   return "#fb7185";
 };
+const SCORE_COLOR = (s: number) =>
+  s >= 70 ? "#2dd4bf" : s >= 45 ? "#fbbf24" : "#fb7185";
 
 export default function PlatformOptimizationPanel({
   platform,
@@ -29,6 +31,7 @@ export default function PlatformOptimizationPanel({
   locale = "en",
 }: Props) {
   const entries = Object.entries(platform?.platform_scores ?? {});
+  const displayScore = typeof impactScore === "number" ? impactScore : 0;
 
   return (
     <div className="glass-panel rounded-2xl p-6">
@@ -44,13 +47,11 @@ export default function PlatformOptimizationPanel({
         <div className="flex items-center gap-2">
           <ExplainabilityHint
             label="How platform optimization score is calculated"
-            description="Platform Optimization shown here is the direct GEO component from score_breakdown, based on platform readiness sub-KPIs."
+            description={`Platform Optimization shown here is the direct GEO component from score_breakdown (${displayScore}/100${impactWeight ? `, ${impactWeight}` : ""}), based on platform readiness sub-KPIs.`}
           />
-          {typeof impactScore === "number" && (
-            <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
-              {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
-            </span>
-          )}
+          <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+            {displayScore}<span className="text-sm text-slate-400">/100</span>
+          </span>
         </div>
       </div>
 

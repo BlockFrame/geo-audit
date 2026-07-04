@@ -24,10 +24,13 @@ const PLATFORMS: Record<string, PlatformConfig> = {
     x_twitter: { en: "X / Twitter", icon: "𝕏", why_en: "Real-time brand signal" },
     facebook: { en: "Facebook", icon: "𝔣", why_en: "Social entity recognition" },
 };
+const SCORE_COLOR = (s: number) =>
+    s >= 70 ? "#2dd4bf" : s >= 45 ? "#fbbf24" : "#fb7185";
 
 export default function BrandPresencePanel({ brand, impactScore, impactWeight, locale = "en" }: Props) {
     const presence = brand?.platform_presence ?? {};
     const presCount = Object.values(presence).filter(Boolean).length;
+    const displayScore = typeof impactScore === "number" ? impactScore : 0;
 
     return (
         <div className="glass-panel rounded-2xl p-6">
@@ -44,13 +47,11 @@ export default function BrandPresencePanel({ brand, impactScore, impactWeight, l
                 <div className="flex items-center gap-2">
                     <ExplainabilityHint
                         label="How brand and content score is calculated"
-                        description="Brand/content score comes from platform presence signals plus E-E-A-T indicators and content depth provided in the report."
+                        description={`Brand Authority Signals shown here is the direct GEO component from score_breakdown (${displayScore}/100${impactWeight ? `, ${impactWeight}` : ""}), derived from platform presence/entity trust signals.`}
                     />
-                    {typeof impactScore === "number" && (
-                        <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
-                            {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
-                        </span>
-                    )}
+                    <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+                        {displayScore}<span className="text-sm text-slate-400">/100</span>
+                    </span>
                 </div>
             </div>
 

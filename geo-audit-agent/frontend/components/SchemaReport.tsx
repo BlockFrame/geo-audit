@@ -11,6 +11,8 @@ type Props = {
   impactWeight?: string;
   locale?: "it" | "en";
 };
+const SCORE_COLOR = (s: number) =>
+  s >= 70 ? "#2dd4bf" : s >= 45 ? "#fbbf24" : "#fb7185";
 
 export default function SchemaReport({ found, types, recommendations, orgJsonldTemplate, impactScore, impactWeight, locale = "en" }: Props) {
   const labels = {
@@ -23,6 +25,7 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
     tplHint: "Paste this snippet inside your site's <head>",
     empty: "No data available.",
   };
+  const displayScore = typeof impactScore === "number" ? impactScore : 0;
 
   return (
     <div className="glass-panel rounded-2xl p-6">
@@ -33,13 +36,11 @@ export default function SchemaReport({ found, types, recommendations, orgJsonldT
         <div className="flex items-center gap-2">
           <ExplainabilityHint
             label="How schema metrics are calculated"
-            description="Schema metrics are based on JSON-LD detection, extracted schema types, and generated remediation recommendations."
+            description={`Structured Data shown here is the direct GEO component from score_breakdown (${displayScore}/100${impactWeight ? `, ${impactWeight}` : ""}), based on JSON-LD detection, schema coverage, and remediation analysis.`}
           />
-          {typeof impactScore === "number" && (
-            <span className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-semibold text-cyan-100">
-              {impactScore}/100{impactWeight ? ` · ${impactWeight}` : ""}
-            </span>
-          )}
+          <span className="text-2xl font-bold" style={{ color: SCORE_COLOR(displayScore) }}>
+            {displayScore}<span className="text-sm text-slate-400">/100</span>
+          </span>
           <span className="text-[11px] text-slate-400">
             {found ? "found" : "missing"} · {types.length} types
           </span>

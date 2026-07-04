@@ -11,13 +11,14 @@ import { useState } from "react";
 type Props = {
   report?: GeoReport;
   locale?: "it" | "en";
+  className?: string;
 };
 
 type ExportFormat = "md" | "pdf";
 type ReportMode = "verbose" | "executive" | "checklist";
 type ExportAudience = "executive" | "marketing" | "technical";
 
-export default function ReportDownloads({ report, locale = "en" }: Props) {
+export default function ReportDownloads({ report, locale = "en", className = "" }: Props) {
   const [activeFormat, setActiveFormat] = useState<ExportFormat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<ReportMode>("executive");
@@ -27,7 +28,6 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
     reportTitle: "Full report",
     exportTitle: "Export from chat",
     exportBody: "Download business-oriented reports in Markdown or PDF with template, audience, and mode.",
-    score: "Score",
     preparing: "Preparing",
     downloadMd: "Download MD",
     downloadPdf: "Download PDF",
@@ -111,18 +111,14 @@ export default function ReportDownloads({ report, locale = "en" }: Props) {
   };
 
   return (
-    <div className="glass-panel-strong flex flex-col rounded-2xl p-5">
-      <div className="flex items-start justify-between gap-3">
+    <div className={`glass-panel-strong flex flex-col rounded-2xl p-5 ${className}`}>
+      <div>
         <div>
           <p className="text-xs text-slate-300/80 uppercase tracking-wider">{labels.reportTitle}</p>
           <h2 className="mt-1 text-lg font-semibold text-slate-100">{labels.exportTitle}</h2>
           <p className="mt-1 max-w-md text-sm text-slate-400">
             {labels.exportBody}
           </p>
-        </div>
-        <div className="glass-chip rounded-xl px-3 py-2 text-right">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">{labels.score}</p>
-          <p className="text-lg font-semibold text-cyan-200">{report.geo_score ?? "n/a"}/100</p>
         </div>
       </div>
 
